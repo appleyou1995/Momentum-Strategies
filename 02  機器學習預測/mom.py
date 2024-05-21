@@ -44,7 +44,7 @@ mom1 = mom
 
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
-from fillna_with_row_mean import fillna_with_row_mean
+from fillna_with_mean import fillna_with_column_mean
 
 
 # %%  處理空值
@@ -65,8 +65,8 @@ mom1_new.dropna(axis=1, how='all', inplace=True)
 
 
 # 將 log_returns1_new 和 mom1_new 中的空值填入各自的平均值
-log_returns1_new = log_returns1_new.apply(fillna_with_row_mean, axis=1)
-mom1_new = mom1_new.apply(fillna_with_row_mean, axis=1)
+log_returns1_new = fillna_with_column_mean(log_returns1_new)
+mom1_new         = fillna_with_column_mean(mom1_new)
 
 
 # %%
