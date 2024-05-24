@@ -5,7 +5,7 @@
 *~
 
 # 忽略所有 .DS_Store 檔案
-.DS_Store
+**/.DS_Store
 
 # 忽略 "99 自訂函數" 資料夾中的 "__pycache__" 資料夾
 99 自訂函數/__pycache__/
