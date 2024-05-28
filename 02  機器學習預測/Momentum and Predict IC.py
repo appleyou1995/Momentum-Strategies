@@ -77,23 +77,23 @@ print(summary_df)
 
 # %%  匯出表格
 
-mom_01m.to_csv(Path_Output+'mom_01m.csv', index=True, index_label='date', encoding='utf-8')
-mom_06m.to_csv(Path_Output+'mom_06m.csv', index=True, index_label='date', encoding='utf-8')
-mom_12m.to_csv(Path_Output+'mom_12m.csv', index=True, index_label='date', encoding='utf-8')
-mom_36m.to_csv(Path_Output+'mom_36m.csv', index=True, index_label='date', encoding='utf-8')
-mom_60m.to_csv(Path_Output+'mom_60m.csv', index=True, index_label='date', encoding='utf-8')
+mom_01m.to_csv(Path_Output+'mom_01m.csv', index=True, index_label='date')
+mom_06m.to_csv(Path_Output+'mom_06m.csv', index=True, index_label='date')
+mom_12m.to_csv(Path_Output+'mom_12m.csv', index=True, index_label='date')
+mom_36m.to_csv(Path_Output+'mom_36m.csv', index=True, index_label='date')
+mom_60m.to_csv(Path_Output+'mom_60m.csv', index=True, index_label='date')
 
-mom_01m_rank.to_csv(Path_Output+'mom_01m_rank.csv', index=True, index_label='date', encoding='utf-8')
-mom_06m_rank.to_csv(Path_Output+'mom_06m_rank.csv', index=True, index_label='date', encoding='utf-8')
-mom_12m_rank.to_csv(Path_Output+'mom_12m_rank.csv', index=True, index_label='date', encoding='utf-8')
-mom_36m_rank.to_csv(Path_Output+'mom_36m_rank.csv', index=True, index_label='date', encoding='utf-8')
-mom_60m_rank.to_csv(Path_Output+'mom_60m_rank.csv', index=True, index_label='date', encoding='utf-8')
+mom_01m_rank.to_csv(Path_Output+'mom_01m_rank.csv', index=True, index_label='date')
+mom_06m_rank.to_csv(Path_Output+'mom_06m_rank.csv', index=True, index_label='date')
+mom_12m_rank.to_csv(Path_Output+'mom_12m_rank.csv', index=True, index_label='date')
+mom_36m_rank.to_csv(Path_Output+'mom_36m_rank.csv', index=True, index_label='date')
+mom_60m_rank.to_csv(Path_Output+'mom_60m_rank.csv', index=True, index_label='date')
 
-IC_01m.to_csv(Path_Output+'IC_01m.csv', index=True, index_label='date', encoding='utf-8')
-IC_06m.to_csv(Path_Output+'IC_06m.csv', index=True, index_label='date', encoding='utf-8')
-IC_12m.to_csv(Path_Output+'IC_12m.csv', index=True, index_label='date', encoding='utf-8')
-IC_36m.to_csv(Path_Output+'IC_36m.csv', index=True, index_label='date', encoding='utf-8')
-IC_60m.to_csv(Path_Output+'IC_60m.csv', index=True, index_label='date', encoding='utf-8')
+IC_01m.to_csv(Path_Output+'IC_01m.csv', index=True, index_label='date')
+IC_06m.to_csv(Path_Output+'IC_06m.csv', index=True, index_label='date')
+IC_12m.to_csv(Path_Output+'IC_12m.csv', index=True, index_label='date')
+IC_36m.to_csv(Path_Output+'IC_36m.csv', index=True, index_label='date')
+IC_60m.to_csv(Path_Output+'IC_60m.csv', index=True, index_label='date')
 
 
 # %%  模型設定
@@ -123,8 +123,8 @@ predict_IC_60m = predict_IC(mom_60m, IC_60m, start_year, start_month, month_step
 
 # %%  匯出表格
 
-predict_IC_01m.to_csv(Path_Output+'predict_IC_01m.csv', index=False, encoding='utf-8')
-predict_IC_06m.to_csv(Path_Output+'predict_IC_06m.csv', index=False, encoding='utf-8')
-predict_IC_12m.to_csv(Path_Output+'predict_IC_12m.csv', index=False, encoding='utf-8')
-predict_IC_36m.to_csv(Path_Output+'predict_IC_36m.csv', index=False, encoding='utf-8')
-predict_IC_60m.to_csv(Path_Output+'predict_IC_60m.csv', index=False, encoding='utf-8')
+predict_IC_01m.to_csv(Path_Output+'predict_IC_01m.csv', index=False)
+predict_IC_06m.to_csv(Path_Output+'predict_IC_06m.csv', index=False)
+predict_IC_12m.to_csv(Path_Output+'predict_IC_12m.csv', index=False)
+predict_IC_36m.to_csv(Path_Output+'predict_IC_36m.csv', index=False)
+predict_IC_60m.to_csv(Path_Output+'predict_IC_60m.csv', index=False)
