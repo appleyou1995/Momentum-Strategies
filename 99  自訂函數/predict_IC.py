@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy  as np
+import random
 
 from sklearn.ensemble     import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
@@ -11,11 +12,13 @@ import tensorflow  as tf
 
 # %%
 
-
 def predict_IC(df_X, df_Y, start_year, start_month, month_step, n_loops, seed):
     
     predict_IC = []
     length = len(df_X.columns)
+    
+    # 確保使用 Python 內建的 random 模組生成的隨機數（例如，random.random() 或 random.randint()）是可重複的。
+    random.seed(seed)
     
     ### 建立模型 
     
@@ -97,17 +100,17 @@ def predict_IC(df_X, df_Y, start_year, start_month, month_step, n_loops, seed):
         else:
             month %= 12
         
-        print(str(year) + "-" + str(month))
+        print("Current iteration: {}".format(i) + " [ " + str(year) + "-" + str(month)+ " ]")
 
         ### 樣本切割
         
-        # 設定訓練集 (待確認)
+        # 設定訓練集
         # mom 值
         X = df_X.iloc[:-i-2,:].values
         # mom IC 值
         Y = df_Y.iloc[1:-i-1,:].values
         
-        # 設定 NN1 ~ NN5 訓練集 (待確認)
+        # 設定 NN1 ~ NN5 訓練集
         # mom 值
         X_train = df_X.iloc[:-i-98,:].values
         # mom IC 值
@@ -176,8 +179,6 @@ def predict_IC(df_X, df_Y, start_year, start_month, month_step, n_loops, seed):
         predict_IC.append((year, month, pred, predregr, prednn1, prednn2, prednn3 ,prednn4, prednn5))
 
 
-
-    # 將 results 轉換為 DataFrame
     df_predict_IC = pd.DataFrame(predict_IC, 
                                  columns=['year', 'month', 'Linear', 'RandomForest', 
                                           'NN1', 'NN2', 'NN3', 'NN4', 'NN5'])

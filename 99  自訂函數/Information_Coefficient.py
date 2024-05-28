@@ -51,6 +51,8 @@ def Information_Coefficient(df_price, df_log_return, h_period):
     IC = pd.DataFrame({'IC': corr_list}, index=log_return_rank.columns)
     
     # 將動能資料轉置(Index = 時間，column = 股票代號)
-    momentum_h = momentum_h.T
+    momentum_h      = momentum_h.T
+    momentum_h_rank = momentum_h_rank.T.sort_index(ascending=False)
+
     
-    return momentum_h, IC
+    return momentum_h, momentum_h_rank, IC

@@ -99,6 +99,6 @@ log_returns_reverse = log_returns_reverse.sort_index(ascending=False)
 
 # %%  # 將 DataFrame 寫入 CSV 檔案
 
-df_new.to_csv(Path_Output+'PRC.csv', index=True, encoding='utf-8')
+df_new.to_csv(Path_Output+'Stock_price.csv', index=True, encoding='utf-8')
 log_returns.to_csv(Path_Output+'log_returns.csv', index=True, encoding='utf-8')
 log_returns_reverse.to_csv(Path_Output+'log_returns_reverse.csv', index=True, encoding='utf-8')
