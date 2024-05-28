@@ -23,7 +23,7 @@ Path_dir = os.path.join(Path_Mac, Path_PaperFolder)
 # %%  Input and Output Path
 
 Path_Input  = os.path.join(Path_dir, 'Data/')
-Path_Output = os.path.join(Path_dir, 'Data/')
+Path_Output = os.path.join(Path_dir, 'Data/Portfolio/')
 
 
 # %%  Import function
