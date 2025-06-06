@@ -1,12 +1,16 @@
+import pandas as pd
+
 def calculate_statistics(df):
-    stats = {
-        'N': df.shape[0],
-        'Minimum': df.min().min(),
-        '25%': df.quantile(0.25).min(),
-        '50%': df.median().min(),
-        '75%': df.quantile(0.75).min(),
-        'Maximum': df.max().max(),
-        'Mean': df.mean().mean(),
-        'SD': df.std().mean()
-    }
-    return stats
+    stats = {}
+    for col in df.columns:
+        stats[col] = {
+            'N': df[col].shape[0],
+            'Minimum': df[col].min(),
+            '25%': df[col].quantile(0.25),
+            '50%': df[col].median(),
+            '75%': df[col].quantile(0.75),
+            'Maximum': df[col].max(),
+            'Mean': df[col].mean(),
+            'SD': df[col].std()
+        }
+    return pd.DataFrame(stats)
