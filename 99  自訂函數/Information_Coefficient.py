@@ -4,7 +4,7 @@ import numpy as np
 
 # %%  Import function
 
-from fillna_with_mean import fillna_with_column_mean
+from fillna_utils import fillna_with_column_median
 
 
 # %%  Function
@@ -31,9 +31,9 @@ def Information_Coefficient(df_price, df_log_return, h_period):
     log_return.dropna(axis=1, how='all', inplace=True)
     momentum_h.dropna(axis=1, how='all', inplace=True)
 
-    # 將空值填入當月的平均值
-    log_return = fillna_with_column_mean(log_return)
-    momentum_h = fillna_with_column_mean(momentum_h)    
+    # 將空值填入當月的中位數
+    log_return = fillna_with_column_median(log_return)
+    momentum_h = fillna_with_column_median(momentum_h)    
     
     # 轉換為浮點數格式
     log_return = log_return.apply(pd.to_numeric, errors='coerce')
