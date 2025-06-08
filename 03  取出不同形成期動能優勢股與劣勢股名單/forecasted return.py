@@ -22,8 +22,9 @@ Path_dir = os.path.join(Path_Mac, Path_PaperFolder)
 
 # %%  Input and Output Path
 
-Path_Input  = os.path.join(Path_dir, 'Data/')
-Path_Output = os.path.join(Path_dir, 'Data/Portfolio/')
+Path_Input_01  = os.path.join(Path_dir, 'Code/01  輸出資料/')
+Path_Input_02  = os.path.join(Path_dir, 'Code/02  輸出資料/')
+Path_Output = os.path.join(Path_dir, 'Code/03  輸出資料/')
 
 
 # %%  Import function
@@ -35,88 +36,52 @@ from Top_Bottom_Return import Top_Bottom_Return
 
 # %%  Import data
 
-stock_price = pd.read_csv(os.path.join(Path_Input, 'Stock_price.csv'), index_col='PERMNO')
+stock_price = pd.read_csv(os.path.join(Path_Input_01, 'Individual_stock_price.csv'), index_col='permno')
 stock_price = stock_price.T
 stock_price.index = pd.to_datetime(stock_price.index).strftime('%Y-%m')
 
-log_return  = pd.read_csv(os.path.join(Path_Input, 'log_returns.csv'), index_col='PERMNO')
+log_return = pd.read_csv(os.path.join(Path_Input_01, 'Individual_next_period_return.csv'), index_col='permno')
 log_return = log_return.T
 log_return.index = pd.to_datetime(log_return.index).strftime('%Y-%m')
 
 
 # %%  Import Momentum Rank
 
-mom_01m_rank = pd.read_csv(os.path.join(Path_Input, 'mom_01m_rank.csv'), index_col='date')
-mom_06m_rank = pd.read_csv(os.path.join(Path_Input, 'mom_06m_rank.csv'), index_col='date')
-mom_12m_rank = pd.read_csv(os.path.join(Path_Input, 'mom_12m_rank.csv'), index_col='date')
-mom_36m_rank = pd.read_csv(os.path.join(Path_Input, 'mom_36m_rank.csv'), index_col='date')
-mom_60m_rank = pd.read_csv(os.path.join(Path_Input, 'mom_60m_rank.csv'), index_col='date')
+mom_01m_rank = pd.read_csv(os.path.join(Path_Input_02, 'mom_01m_rank.csv'), index_col='date')
+mom_06m_rank = pd.read_csv(os.path.join(Path_Input_02, 'mom_06m_rank.csv'), index_col='date')
+mom_12m_rank = pd.read_csv(os.path.join(Path_Input_02, 'mom_12m_rank.csv'), index_col='date')
+mom_36m_rank = pd.read_csv(os.path.join(Path_Input_02, 'mom_36m_rank.csv'), index_col='date')
+mom_60m_rank = pd.read_csv(os.path.join(Path_Input_02, 'mom_60m_rank.csv'), index_col='date')
 
 
 # %%  Top_Bottom_Return
 
-# num=1：只挑一支股票
+# 設定 pct 組合
+pct_list = [0.01, 0.02, 0.1]
 
-(result_01m, 
- Top_average_01m, 
- Bottom_average_01m, 
- Top_stocks_01m, 
- Bottom_stocks_01m) = Top_Bottom_Return(mom_01m_rank, stock_price, log_return, num=1)
-
-(result_06m, 
- Top_average_06m, 
- Bottom_average_06m, 
- Top_stocks_06m, 
- Bottom_stocks_06m) = Top_Bottom_Return(mom_06m_rank, stock_price, log_return, num=1)
-
-(result_12m, 
- Top_average_12m, 
- Bottom_average_12m, 
- Top_stocks_12m, 
- Bottom_stocks_12m) = Top_Bottom_Return(mom_12m_rank, stock_price, log_return, num=1)
-
-(result_36m, 
- Top_average_36m, 
- Bottom_average_36m, 
- Top_stocks_36m, 
- Bottom_stocks_36m) = Top_Bottom_Return(mom_36m_rank, stock_price, log_return, num=1)
-
-(result_60m, 
- Top_average_60m, 
- Bottom_average_60m, 
- Top_stocks_60m, 
- Bottom_stocks_60m) = Top_Bottom_Return(mom_60m_rank, stock_price, log_return, num=1)
+# 對應的 mom rank 和檔名 prefix
+mom_rank_list = [mom_01m_rank, mom_06m_rank, mom_12m_rank, mom_36m_rank, mom_60m_rank]
+horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
 
 
-# %%  Ouput dataframe
+# %% 迴圈跑不同 pct
 
-result_01m.to_csv(Path_Output+'result_01m.csv', index=True, index_label='date')
-result_06m.to_csv(Path_Output+'result_06m.csv', index=True, index_label='date')
-result_12m.to_csv(Path_Output+'result_12m.csv', index=True, index_label='date')
-result_36m.to_csv(Path_Output+'result_36m.csv', index=True, index_label='date')
-result_60m.to_csv(Path_Output+'result_60m.csv', index=True, index_label='date')
-
-Top_average_01m.to_csv(Path_Output+'Top_average_01m.csv', index=True, index_label='date')
-Top_average_06m.to_csv(Path_Output+'Top_average_06m.csv', index=True, index_label='date')
-Top_average_12m.to_csv(Path_Output+'Top_average_12m.csv', index=True, index_label='date')
-Top_average_36m.to_csv(Path_Output+'Top_average_36m.csv', index=True, index_label='date')
-Top_average_60m.to_csv(Path_Output+'Top_average_60m.csv', index=True, index_label='date')
-
-Bottom_average_01m.to_csv(Path_Output+'Bottom_average_01m.csv', index=True, index_label='date')
-Bottom_average_06m.to_csv(Path_Output+'Bottom_average_06m.csv', index=True, index_label='date')
-Bottom_average_12m.to_csv(Path_Output+'Bottom_average_12m.csv', index=True, index_label='date')
-Bottom_average_36m.to_csv(Path_Output+'Bottom_average_36m.csv', index=True, index_label='date')
-Bottom_average_60m.to_csv(Path_Output+'Bottom_average_60m.csv', index=True, index_label='date')
-
-Top_stocks_01m.to_csv(Path_Output+'Top_stocks_01m.csv', index=True, index_label='date')
-Top_stocks_06m.to_csv(Path_Output+'Top_stocks_06m.csv', index=True, index_label='date')
-Top_stocks_12m.to_csv(Path_Output+'Top_stocks_12m.csv', index=True, index_label='date')
-Top_stocks_36m.to_csv(Path_Output+'Top_stocks_36m.csv', index=True, index_label='date')
-Top_stocks_60m.to_csv(Path_Output+'Top_stocks_60m.csv', index=True, index_label='date')
-
-Bottom_stocks_01m.to_csv(Path_Output+'Bottom_stocks_01m.csv', index=True, index_label='date')
-Bottom_stocks_06m.to_csv(Path_Output+'Bottom_stocks_06m.csv', index=True, index_label='date')
-Bottom_stocks_12m.to_csv(Path_Output+'Bottom_stocks_12m.csv', index=True, index_label='date')
-Bottom_stocks_36m.to_csv(Path_Output+'Bottom_stocks_36m.csv', index=True, index_label='date')
-Bottom_stocks_60m.to_csv(Path_Output+'Bottom_stocks_60m.csv', index=True, index_label='date')
-
+for pct in pct_list:
+    
+    print(f"Running Top_Bottom_Return with pct = {pct:.0%}")
+    
+    for mom_rank, horizon_name in zip(mom_rank_list, horizon_name_list):
+        
+        # Run Top_Bottom_Return
+        result, Top_average, Bottom_average, Top_stocks, Bottom_stocks = Top_Bottom_Return(
+            mom_rank, stock_price, log_return, pct=pct)
+        
+        # 檔名用 pct 百分比轉成 1, 2, 10 儲存
+        pct_name = str(int(pct * 100))
+        
+        # 匯出 csv
+        result.to_csv(Path_Output + f'result_{horizon_name}_{pct_name}pct.csv', index=True, index_label='date')
+        Top_average.to_csv(Path_Output + f'Top_average_{horizon_name}_{pct_name}pct.csv', index=True, index_label='date')
+        Bottom_average.to_csv(Path_Output + f'Bottom_average_{horizon_name}_{pct_name}pct.csv', index=True, index_label='date')
+        Top_stocks.to_csv(Path_Output + f'Top_stocks_{horizon_name}_{pct_name}pct.csv', index=True, index_label='date')
+        Bottom_stocks.to_csv(Path_Output + f'Bottom_stocks_{horizon_name}_{pct_name}pct.csv', index=True, index_label='date')
