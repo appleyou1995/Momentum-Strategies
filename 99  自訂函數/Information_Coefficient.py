@@ -21,11 +21,9 @@ def Information_Coefficient(df_price, df_log_return, h_period):
 
     
     # 比對 log_return 和 momentum_h 相同時間是否都有值，若其中一個沒有，則另一個也改為 NaN
-    for i in range(momentum_h.shape[0]):
-        for j in range(momentum_h.shape[1]):
-            if pd.isna(momentum_h.iat[i, j]) or pd.isna(log_return.iat[i, j]):
-                    momentum_h.iat[i, j] = np.nan
-                    log_return.iat[i, j] = np.nan
+    mask_nan = momentum_h.isna() | log_return.isna()
+    momentum_h[mask_nan] = np.nan
+    log_return[mask_nan] = np.nan
 
     # 刪除整個月份資料都是 NaN 的欄
     log_return.dropna(axis=1, how='all', inplace=True)
@@ -33,7 +31,7 @@ def Information_Coefficient(df_price, df_log_return, h_period):
 
     # 將空值填入當月的中位數
     log_return = fillna_with_column_median(log_return)
-    momentum_h = fillna_with_column_median(momentum_h)    
+    momentum_h = fillna_with_column_median(momentum_h)
     
     # 轉換為浮點數格式
     log_return = log_return.apply(pd.to_numeric, errors='coerce')
@@ -48,18 +46,18 @@ def Information_Coefficient(df_price, df_log_return, h_period):
     Normal_IC_list = []
     
     for month in log_return.columns:
-        log_return_monthly = log_return[month]
-        momentum_h_monthly = momentum_h[month]
         
         # normal IC: Pearson correlation
-        normal_ic = log_return_monthly.corr(momentum_h_monthly)
-        Normal_IC_list.append(normal_ic)
+        log_return_monthly = log_return[month]
+        momentum_h_monthly = momentum_h[month]
+        Normal_IC = log_return_monthly.corr(momentum_h_monthly)
+        Normal_IC_list.append(Normal_IC)
         
         # rank IC: Spearman correlation (透過 rank + Pearson)
         log_return_rank_monthly = log_return_rank[month]
         momentum_h_rank_monthly = momentum_h_rank[month]
-        rank_ic = log_return_rank_monthly.corr(momentum_h_rank_monthly)
-        Rank_IC_list.append(rank_ic)
+        Rank_IC = log_return_rank_monthly.corr(momentum_h_rank_monthly)
+        Rank_IC_list.append(Rank_IC)
 
     # 整理成 DataFrame
     IC = pd.DataFrame({
