@@ -34,7 +34,7 @@ col_headers_msp500 = conn.describe_table(library='crsp_a_indexes', table='msp500
 query_sp500 = text("""
                    SELECT caldt, spindx
                    FROM crsp_a_indexes.msp500
-                   WHERE caldt BETWEEN '1995-01-01' AND '2024-12-31'
+                   WHERE caldt BETWEEN '1957-03-01' AND '2024-12-31'
                    """)
 
 # Execute the query and fetch the data
