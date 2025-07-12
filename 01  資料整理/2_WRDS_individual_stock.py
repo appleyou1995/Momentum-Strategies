@@ -32,7 +32,7 @@ col_headers_msf = conn.describe_table(library='crsp_a_stock', table='msf')
 # %%  Define the query for individual stock data
 
 # Define the start and end years
-year_start = 1995
+year_start = 1957
 year_end = 2024
 
 # Initialize an empty DataFrame to store the results
