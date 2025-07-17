@@ -45,13 +45,11 @@ for year in range(year_start, year_end + 1):
     # Define the query for the specific year
     query_msf = text(f"""
                      SELECT 
-                         date, permno, prc, hsiccd
+                         date, permno, prc
                      FROM 
                          crsp_a_stock.msf
                      WHERE
                          date BETWEEN '{year}-01-01' AND '{year}-12-31'
-                     AND NOT
-                         ((hsiccd > 4900 AND hsiccd < 4999) OR (hsiccd > 6000 AND hsiccd < 6999))
                      """)
     
     # Execute the query and fetch the data for the year
@@ -73,6 +71,8 @@ df_msf_pivot = pd.pivot_table(df_msf_all, index='permno', columns='date', values
 df_msf_pivot = df_msf_pivot.dropna(subset=df_msf_pivot.columns[-1], how='any')
 
 # Take absolute value of prices to handle CRSP's use of negative prices to indicate bid/ask quotes
+# Note: CRSP uses negative prices in the PRC field to indicate that the value is a bid/ask quote
+#       rather than an actual trade price.
 df_msf_pivot = df_msf_pivot.abs()
 
 # Convert column names (dates) from datetime to YYYY-MM string format
