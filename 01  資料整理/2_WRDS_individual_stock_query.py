@@ -85,8 +85,8 @@ df_next_period_return = np.log(df_msf_pivot.shift(-1, axis=1) / df_msf_pivot)
 
 # %% Output
 
-df_msf_pivot.to_csv(Path_Output+'/Individual_stock_price.csv', index=True)
-df_next_period_return.to_csv(Path_Output+'/Individual_next_period_return.csv', index=True)
+df_msf_pivot.to_csv(Path_Output+'/Individual_stock_price_query.csv', index=True)
+df_next_period_return.to_csv(Path_Output+'/Individual_next_period_return_query.csv', index=True)
 
 
 
