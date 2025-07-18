@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy  as np
 import os
 import matplotlib.pyplot as plt
 
@@ -22,13 +23,25 @@ file_path = r"D:\Google\我的雲端硬碟\學術｜研究與論文\論文著作
 df = pd.read_csv(file_path)
 
 
-# %%  
+# %% Price data pivot and abs
 
 df_pivot = pd.pivot_table(df, index='PERMNO', columns='date', values='PRC')
 df_pivot = df_pivot.abs()
 
 
-# %%  
+# %%  Next-period log return
+
+# Compute next-period log return: ln(P_{t+1} / P_t), stored at time t
+df_next_period_return = np.log(df_pivot.shift(-1, axis=1) / df_pivot)
+
+
+# %%  Output
+
+df_pivot.to_csv(Path_Output+'/Individual_stock_price_manual.csv', index=True)
+df_next_period_return.to_csv(Path_Output+'/Individual_next_period_return_manual.csv', index=True)
+
+
+# %%  Check
 
 # 找出每支股票中有非 NaN 的期間
 valid_range = df_pivot.notna()
@@ -63,25 +76,25 @@ valid_periods = pd.DataFrame({
 print(f"Number of stocks with price interruptions: {interrupted_series.sum()}")
 
 
-# %%
+# %%  Check
 
 interrupted_permnos = interrupted_series[interrupted_series].index.tolist()
 df_interrupted = df_pivot.loc[interrupted_permnos]
 df_check = valid_periods[valid_periods['Has_Interruption']]
 
-# 有一大段時間都不見 ⭢ 放著不管？
+# 有一大段時間都不見
 df_10007 = df[df['PERMNO'] == 10007]
 df_10012 = df[df['PERMNO'] == 10012]
 df_10028 = df[df['PERMNO'] == 10028]
 df_10051 = df[df['PERMNO'] == 10051]
 
-# 其中一個月不見 ⭢ 拿前後月份平均？
+# 其中一個月不見
 df_10021 = df[df['PERMNO'] == 10021]
 df_10647 = df[df['PERMNO'] == 10647]
 df_10050 = df[df['PERMNO'] == 10050]
 
 
-# %%  The number of stocks & the average number of stocks per month
+# %%  Check: The number of stocks & the average number of stocks per month
 
 monthly_stock_counts = df_pivot.notna().sum(axis=0)
 
@@ -96,7 +109,7 @@ average_stocks_per_month = monthly_stock_counts.mean()
 print(f"Average number of stocks per month: {average_stocks_per_month:.2f}")
 
 
-# %%  1957-2016 check
+# %%  Check: 1957-2016
 
 # (1) "The number of stocks in our sample is almost 30,000"
 
@@ -123,14 +136,3 @@ monthly_in_range = monthly_stock_counts[mask]
 # 重新計算平均
 average_1957_2016 = monthly_in_range.mean()
 print(f"(2) Average number of stocks per month (1957–2016): {average_1957_2016:.2f}")
-
-
-# %%  Next-period log return
-
-# Compute next-period log return: ln(P_{t+1} / P_t), stored at time t
-df_next_period_return = np.log(df_msf_pivot.shift(-1, axis=1) / df_msf_pivot)
-
-
-# %%  Output
-
-df_pivot.to_csv(Path_Output+'/Individual_stock_price_manual.csv', index=True)
