@@ -28,16 +28,14 @@ df = pd.read_csv(file_path)
 df_pivot = pd.pivot_table(df, index='PERMNO', columns='date', values='PRC')
 df_pivot = df_pivot.abs()
 
+df_pivot.to_csv(Path_Output+'/Individual_stock_price_manual.csv', index=True)
 
-# %%  Next-period log return
+
+# %%  Next-period log return (file too large)
 
 # Compute next-period log return: ln(P_{t+1} / P_t), stored at time t
 df_next_period_return = np.log(df_pivot.shift(-1, axis=1) / df_pivot)
 
-
-# %%  Output
-
-df_pivot.to_csv(Path_Output+'/Individual_stock_price_manual.csv', index=True)
 df_next_period_return.to_csv(Path_Output+'/Individual_next_period_return_manual.csv', index=True)
 
 
