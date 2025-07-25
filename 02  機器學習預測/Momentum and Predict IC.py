@@ -16,8 +16,8 @@ Path_dir = os.path.join(Path_Win, Path_PaperFolder)
 
 # %%  Mac 資料夾路徑
 
-Path_Mac = '/Users/irisyu/Library/CloudStorage/GoogleDrive-jouping.yu@gmail.com/'
-Path_dir = os.path.join(Path_Mac, Path_PaperFolder)
+# Path_Mac = '/Users/irisyu/Library/CloudStorage/GoogleDrive-jouping.yu@gmail.com/'
+# Path_dir = os.path.join(Path_Mac, Path_PaperFolder)
 
 
 # %%  Input and Output Path
@@ -35,19 +35,18 @@ from calculate_statistics    import calculate_statistics
 from predict_IC              import predict_IC
 
 
-# %%  Import data
+# %%  Import individual stock price
 
-df_stock_price        = pd.read_csv(os.path.join(Path_Input, 'Individual_stock_price.csv'), index_col='permno')
-df_next_period_return = pd.read_csv(os.path.join(Path_Input, 'Individual_next_period_return.csv'), index_col='permno')
+df_stock_price = pd.read_csv(os.path.join(Path_Input, 'Individual_stock_price_manual.csv'), index_col='PERMNO')
 
 
 # %%  計算 momentum、IC 值
 
-mom_01m, mom_01m_rank, IC_01m = Information_Coefficient(df_stock_price, df_next_period_return, 1)
-mom_06m, mom_06m_rank, IC_06m = Information_Coefficient(df_stock_price, df_next_period_return, 6)
-mom_12m, mom_12m_rank, IC_12m = Information_Coefficient(df_stock_price, df_next_period_return, 12)
-mom_36m, mom_36m_rank, IC_36m = Information_Coefficient(df_stock_price, df_next_period_return, 36)
-mom_60m, mom_60m_rank, IC_60m = Information_Coefficient(df_stock_price, df_next_period_return, 60)
+mom_01m, IC_01m = Information_Coefficient(df_stock_price, 1)
+mom_06m, IC_06m = Information_Coefficient(df_stock_price, 6)
+mom_12m, IC_12m = Information_Coefficient(df_stock_price, 12)
+mom_36m, IC_36m = Information_Coefficient(df_stock_price, 36)
+mom_60m, IC_60m = Information_Coefficient(df_stock_price, 60)
 
 
 # %%  Statistics
@@ -90,12 +89,6 @@ mom_06m.to_csv(Path_Output+'mom_06m.csv', index=True, index_label='date')
 mom_12m.to_csv(Path_Output+'mom_12m.csv', index=True, index_label='date')
 mom_36m.to_csv(Path_Output+'mom_36m.csv', index=True, index_label='date')
 mom_60m.to_csv(Path_Output+'mom_60m.csv', index=True, index_label='date')
-
-mom_01m_rank.to_csv(Path_Output+'mom_01m_rank.csv', index=True, index_label='date')
-mom_06m_rank.to_csv(Path_Output+'mom_06m_rank.csv', index=True, index_label='date')
-mom_12m_rank.to_csv(Path_Output+'mom_12m_rank.csv', index=True, index_label='date')
-mom_36m_rank.to_csv(Path_Output+'mom_36m_rank.csv', index=True, index_label='date')
-mom_60m_rank.to_csv(Path_Output+'mom_60m_rank.csv', index=True, index_label='date')
 
 IC_01m.to_csv(Path_Output+'IC_01m.csv', index=True, index_label='date')
 IC_06m.to_csv(Path_Output+'IC_06m.csv', index=True, index_label='date')
