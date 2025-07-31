@@ -16,20 +16,25 @@ def Information_Coefficient(df_price, h_period):
     # Calculate log return: R_{t} = ln(S_{t+1}/S_{t})
     log_return = np.log(df_price.shift(-1, axis=1) / df_price)
     
-    # 計算每個月每間公司的 h 個月動能
+    ### 計算每個月每間公司的 h 個月動能
+    # 滾動區間長度（取決於 h_period）
+    window = h_period + 2
+    
+    # 建立完整資料遮罩：S_t ~ S_{t-1-h} 都要有值
+    count_valid = df_price.rolling(window=window, axis=1).count()
+    mask_valid = (count_valid == window)
+    
+    # 動能分子與分母
     if h_period == 1:
-        momentum_h = np.log(df_price.shift(1, axis=1) / df_price.shift(2, axis=1))
+        numerator   = df_price.shift(1, axis=1)                                # S_{t-1}
+        denominator = df_price.shift(2, axis=1)                                # S_{t-2}
     else:
-        S_t_minus_2 = df_price.shift(2, axis=1)
-        S_t_minus_m_minus_1 = df_price.shift(h_period + 1, axis=1)
+        numerator   = df_price.shift(2, axis=1)                                # S_{t-2}
+        denominator = df_price.shift(h_period + 1, axis=1)                     # S_{t-1-h}
 
-        # 滾動計算非空值的數量，檢查是否等於 h_period
-        valid_window_count = df_price.shift(2, axis=1).rolling(window=h_period, axis=1).count()
-        mask_valid = (valid_window_count == h_period)
-
-        # 動能計算
-        momentum_h = np.where(mask_valid, np.log(S_t_minus_2 / S_t_minus_m_minus_1), np.nan)
-        momentum_h = pd.DataFrame(momentum_h, index=df_price.index, columns=df_price.columns)
+    # 計算 momentum，缺資料則為 NaN
+    momentum_h = np.where(mask_valid, np.log(numerator / denominator), np.nan)
+    momentum_h = pd.DataFrame(momentum_h, index=df_price.index, columns=df_price.columns)
 
     
     # 比對 log_return 和 momentum_h 相同時間是否都有值，若其中一個沒有，則另一個也改為 NaN
@@ -49,7 +54,7 @@ def Information_Coefficient(df_price, h_period):
     log_return = log_return.apply(pd.to_numeric, errors='coerce')
     momentum_h = momentum_h.apply(pd.to_numeric, errors='coerce')
     
-    # 計算 IC 值
+    ### 計算 IC 值
     Normal_IC_list = []
     Rank_IC_list   = []
     
