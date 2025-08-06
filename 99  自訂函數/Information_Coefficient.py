@@ -17,7 +17,7 @@ def Information_Coefficient(df_price, h_period):
     log_return = np.log(df_price.shift(-1, axis=1) / df_price)
     
     ### 計算每個月每間公司的 h 個月動能
-    # 滾動區間長度（取決於 h_period）
+    # 滾動區間長度
     window = 60 + 1
     
     # 建立完整資料遮罩：S_t ~ S_{t-60} 都要有值
