@@ -32,7 +32,7 @@ sys.path.append(Path_dir+'/Code/99  自訂函數')
 
 from Information_Coefficient import Information_Coefficient
 from calculate_statistics    import calculate_statistics
-from predict_IC              import predict_IC
+
 
 
 # %%  Import individual stock price
@@ -97,76 +97,3 @@ IC_36m.to_csv(Path_Output+'IC_36m.csv', index=True, index_label='date')
 IC_60m.to_csv(Path_Output+'IC_60m.csv', index=True, index_label='date')
 
 summary_df_horizontal.to_csv(Path_Output+'statistics.csv', index=True)
-
-
-# %%  模型設定
-
-# 設定迴圈次數
-n_loops = 100
-
-# 設定每次迴圈的間隔月份
-month_step = -1
-
-# 設定隨機種子以確保結果的可重現性
-my_seed = 42
-
-# 設定驗證集 window 長度（以月為單位）
-window_length = 96
-
-# 設定預測 horizon
-horizon = 1
-
-
-# %%  設定不同 Y 欄位（Normal IC / Rank IC）
-
-df_Y_01m_normal = IC_01m[['Normal_IC']]
-df_Y_01m_rank   = IC_01m[['Rank_IC']]
-
-df_Y_06m_normal = IC_06m[['Normal_IC']]
-df_Y_06m_rank   = IC_06m[['Rank_IC']]
-
-df_Y_12m_normal = IC_12m[['Normal_IC']]
-df_Y_12m_rank   = IC_12m[['Rank_IC']]
-
-df_Y_36m_normal = IC_36m[['Normal_IC']]
-df_Y_36m_rank   = IC_36m[['Rank_IC']]
-
-df_Y_60m_normal = IC_60m[['Normal_IC']]
-df_Y_60m_rank   = IC_60m[['Rank_IC']]
-
-
-# %%  預測 IC
-
-# Rank IC
-predict_IC_01m_rank = predict_IC(mom_01m, df_Y_01m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_01m_rank.to_csv(Path_Output + 'predict_IC_01m_rank.csv', index=False)
-
-predict_IC_06m_rank = predict_IC(mom_06m, df_Y_06m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_06m_rank.to_csv(Path_Output + 'predict_IC_06m_rank.csv', index=False)
-
-predict_IC_12m_rank = predict_IC(mom_12m, df_Y_12m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_12m_rank.to_csv(Path_Output + 'predict_IC_12m_rank.csv', index=False)
-
-predict_IC_36m_rank = predict_IC(mom_36m, df_Y_36m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_36m_rank.to_csv(Path_Output + 'predict_IC_36m_rank.csv', index=False)
-
-predict_IC_60m_rank = predict_IC(mom_60m, df_Y_60m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_60m_rank.to_csv(Path_Output + 'predict_IC_60m_rank.csv', index=False)
-
-
-# Normal IC
-predict_IC_01m_normal = predict_IC(mom_01m, df_Y_01m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_01m_normal.to_csv(Path_Output + 'predict_IC_01m_normal.csv', index=False)
-
-predict_IC_06m_normal = predict_IC(mom_06m, df_Y_06m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_06m_normal.to_csv(Path_Output + 'predict_IC_06m_normal.csv', index=False)
-
-predict_IC_12m_normal = predict_IC(mom_12m, df_Y_12m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_12m_normal.to_csv(Path_Output + 'predict_IC_12m_normal.csv', index=False)
-
-predict_IC_36m_normal = predict_IC(mom_36m, df_Y_36m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_36m_normal.to_csv(Path_Output + 'predict_IC_36m_normal.csv', index=False)
-
-predict_IC_60m_normal = predict_IC(mom_60m, df_Y_60m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_60m_normal.to_csv(Path_Output + 'predict_IC_60m_normal.csv', index=False)
-

@@ -6,7 +6,7 @@ from scipy.stats import pearsonr, spearmanr
 
 # %%  Import function
 
-from fillna_utils import fillna_with_column_median
+# from fillna_utils import fillna_with_column_median
 
 
 # %%  Function
@@ -18,9 +18,9 @@ def Information_Coefficient(df_price, h_period):
     
     ### 計算每個月每間公司的 h 個月動能
     # 滾動區間長度（取決於 h_period）
-    window = h_period + 2
+    window = 60 + 1
     
-    # 建立完整資料遮罩：S_t ~ S_{t-1-h} 都要有值
+    # 建立完整資料遮罩：S_t ~ S_{t-60} 都要有值
     count_valid = df_price.rolling(window=window, axis=1).count()
     mask_valid = (count_valid == window)
     
@@ -45,10 +45,13 @@ def Information_Coefficient(df_price, h_period):
     # 刪除整個月份資料都是 NaN 的欄
     log_return.dropna(axis=1, how='all', inplace=True)
     momentum_h.dropna(axis=1, how='all', inplace=True)
+    
+    # monthly_non_nan_counts_log_return = log_return.count().to_frame(name='non_nan_count')
+    # monthly_non_nan_counts_momentum_h = momentum_h.count().to_frame(name='non_nan_count')
 
-    # 將空值填入當月的中位數
-    log_return = fillna_with_column_median(log_return)
-    momentum_h = fillna_with_column_median(momentum_h)
+    # # 將空值填入當月的中位數
+    # log_return = fillna_with_column_median(log_return)
+    # momentum_h = fillna_with_column_median(momentum_h)
     
     # 轉換為浮點數格式
     log_return = log_return.apply(pd.to_numeric, errors='coerce')
@@ -58,13 +61,16 @@ def Information_Coefficient(df_price, h_period):
     Normal_IC_list = []
     Rank_IC_list   = []
     
-    for month in log_return.columns:        
+    for month in log_return.columns:
+        x = log_return[month].dropna()
+        y = momentum_h[month].dropna()
+        
         # Pearson correlation (Normal IC)
-        Normal_IC = pearsonr(log_return[month], momentum_h[month])[0]
+        Normal_IC = pearsonr(x, y)[0]
         Normal_IC_list.append(Normal_IC)
     
         # Spearman correlation (Rank IC)
-        Rank_IC = spearmanr(log_return[month], momentum_h[month])[0]
+        Rank_IC = spearmanr(x, y)[0]
         Rank_IC_list.append(Rank_IC)
 
     # 整理成 DataFrame
