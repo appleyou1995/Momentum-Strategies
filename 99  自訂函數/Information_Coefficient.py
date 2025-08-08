@@ -18,7 +18,7 @@ def Information_Coefficient(df_price, h_period):
     
     ### 計算每個月每間公司的 h 個月動能
     # 滾動區間長度
-    window = 60 + 1
+    window = 60 + 2
     
     # 建立完整資料遮罩：S_t ~ S_{t-60} 都要有值
     count_valid = df_price.rolling(window=window, axis=1).count()
