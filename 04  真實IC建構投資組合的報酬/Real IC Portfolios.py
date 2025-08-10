@@ -190,66 +190,14 @@ def portfolio_analysis(df_T, annualize, periods_per_year=12):
     return out
 
 
-Portfolio_Analysis_normal = portfolio_analysis(Portfolio_T_normal, annualize=False)
-Portfolio_Analysis_rank   = portfolio_analysis(Portfolio_T_rank,   annualize=False)
+Portfolio_Analysis_normal = portfolio_analysis(Portfolio_T_normal, annualize=False).astype(float).round(3)
+Portfolio_Analysis_rank   = portfolio_analysis(Portfolio_T_rank,   annualize=False).astype(float).round(3)
+
+Portfolio_Analysis_normal.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_normal.csv'))
+Portfolio_Analysis_rank.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_rank.csv'))
 
 
-# %%  Output to markdown
-
-def merge_analysis_to_markdown(df_normal, df_rank, path_output, filename="Portfolio_Analysis.md"):
-    
-    rows = ['tradable', 'portfolio_1%', 'portfolio_5%', 'portfolio_10%', 'SP500']
-    
-    df_normal = df_normal.loc[rows]
-    df_rank   = df_rank.loc[rows]
-    
-    columns = pd.MultiIndex.from_tuples(
-        [('tradable', ''), 
-         ('normal', '1%'), ('normal', '5%'), ('normal', '10%'),
-         ('rank', '1%'), ('rank', '5%'), ('rank', '10%'),
-         ('SP500', '')]
-    )
-    
-    merged = pd.DataFrame(index=df_normal.index, columns=columns)
-    
-    merged[('tradable', '')]     = df_normal['mean'] if 'mean' in df_normal.columns else None
-    merged[('normal', '1%')]     = df_normal.loc['portfolio_1%', 'mean']
-    merged[('normal', '5%')]     = df_normal.loc['portfolio_5%', 'mean']
-    merged[('normal', '10%')]    = df_normal.loc['portfolio_10%', 'mean']
-    merged[('rank', '1%')]       = df_rank.loc['portfolio_1%', 'mean']
-    merged[('rank', '5%')]       = df_rank.loc['portfolio_5%', 'mean']
-    merged[('rank', '10%')]      = df_rank.loc['portfolio_10%', 'mean']
-    merged[('SP500', '')]        = df_normal.loc['SP500', 'mean']
-    
-    # 這裡你可以改成 mean/std/sharpe 全部放進去
-    # 範例：index 改成 mean/std/sharpe，column 為上面多層
-    df_final = pd.DataFrame(index=['mean', 'std', 'sharpe'], columns=columns)
-    
-    for row in ['mean', 'std', 'sharpe']:
-        df_final.loc[row, ('tradable', '')]  = df_normal.loc['tradable', row]
-        df_final.loc[row, ('normal', '1%')]  = df_normal.loc['portfolio_1%', row]
-        df_final.loc[row, ('normal', '5%')]  = df_normal.loc['portfolio_5%', row]
-        df_final.loc[row, ('normal', '10%')] = df_normal.loc['portfolio_10%', row]
-        df_final.loc[row, ('rank', '1%')]    = df_rank.loc['portfolio_1%', row]
-        df_final.loc[row, ('rank', '5%')]    = df_rank.loc['portfolio_5%', row]
-        df_final.loc[row, ('rank', '10%')]   = df_rank.loc['portfolio_10%', row]
-        df_final.loc[row, ('SP500', '')]     = df_normal.loc['SP500', row]
-    
-    df_final = df_final.astype(float).round(3)
-    
-    # 存成 Markdown
-    md_path = os.path.join(path_output, filename)
-    with open(md_path, 'w', encoding='utf-8') as f:
-        f.write(df_final.to_markdown())
-
-    return df_final
-
-
-Portfolio_Analysis_merged = merge_analysis_to_markdown(
-    Portfolio_Analysis_normal, 
-    Portfolio_Analysis_rank, 
-    Path_Output
-)
+# %%  
 
 
 # %%  
