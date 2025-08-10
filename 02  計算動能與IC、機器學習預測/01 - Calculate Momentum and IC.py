@@ -34,7 +34,6 @@ from Information_Coefficient import Information_Coefficient
 from calculate_statistics    import calculate_statistics
 
 
-
 # %%  Import individual stock price
 
 df_stock_price = pd.read_csv(os.path.join(Path_Input, 'Individual_stock_price_manual.csv'), index_col='PERMNO')
@@ -62,24 +61,19 @@ IC_60m_stats = calculate_statistics(IC_60m)
 all_stats = [IC_01m_stats, IC_06m_stats, IC_12m_stats, IC_36m_stats, IC_60m_stats]
 period_names = ['1 month', '6 month', '12 month', '36 month', '60 month']
 
-# 重新組合 columns → MultiIndex columns，展開成「橫向」
-all_stats_with_columns = []
+# Normal_IC
+normal_ic_df = pd.concat(
+    [df.xs('Normal_IC', axis=1, level=0) for df in all_stats],
+    axis=1
+).astype(float).round(4)
+normal_ic_df.columns = period_names
 
-for period_name, df_stats in zip(period_names, all_stats):
-    df_stats.columns = pd.MultiIndex.from_product([[period_name], df_stats.columns])
-    all_stats_with_columns.append(df_stats)
-
-# Concatenate along columns → axis=1
-summary_df_horizontal = pd.concat(all_stats_with_columns, axis=1)
-
-# 顯示設定
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.expand_frame_repr', False)
-pd.set_option('display.max_colwidth', None)
-
-# 顯示
-print(summary_df_horizontal)
+# Rank_IC
+rank_ic_df = pd.concat(
+    [df.xs('Rank_IC', axis=1, level=0) for df in all_stats],
+    axis=1
+).astype(float).round(4)
+rank_ic_df.columns = period_names
 
 
 # %%  匯出表格
@@ -96,4 +90,6 @@ IC_12m.to_csv(Path_Output+'IC_12m.csv', index=True, index_label='date')
 IC_36m.to_csv(Path_Output+'IC_36m.csv', index=True, index_label='date')
 IC_60m.to_csv(Path_Output+'IC_60m.csv', index=True, index_label='date')
 
-summary_df_horizontal.to_csv(Path_Output+'statistics.csv', index=True)
+normal_ic_df.to_csv(Path_Output+'statistics_Normal_IC.csv', index=True)
+rank_ic_df.to_csv(Path_Output+'statistics_Rank_IC.csv', index=True)
+
