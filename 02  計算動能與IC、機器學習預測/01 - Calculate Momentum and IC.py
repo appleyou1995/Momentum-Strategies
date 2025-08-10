@@ -62,18 +62,20 @@ all_stats = [IC_01m_stats, IC_06m_stats, IC_12m_stats, IC_36m_stats, IC_60m_stat
 period_names = ['1 month', '6 month', '12 month', '36 month', '60 month']
 
 # Normal_IC
-normal_ic_df = pd.concat(
+statistics_Normal_IC = pd.concat(
     [df.xs('Normal_IC', axis=1, level=0) for df in all_stats],
     axis=1
 ).astype(float).round(4)
-normal_ic_df.columns = period_names
+statistics_Normal_IC.columns = period_names
+statistics_Normal_IC = statistics_Normal_IC.T
 
 # Rank_IC
-rank_ic_df = pd.concat(
+statistics_Rank_IC = pd.concat(
     [df.xs('Rank_IC', axis=1, level=0) for df in all_stats],
     axis=1
 ).astype(float).round(4)
-rank_ic_df.columns = period_names
+statistics_Rank_IC.columns = period_names
+statistics_Rank_IC = statistics_Rank_IC.T
 
 
 # %%  匯出表格
@@ -90,6 +92,6 @@ IC_12m.to_csv(Path_Output+'IC_12m.csv', index=True, index_label='date')
 IC_36m.to_csv(Path_Output+'IC_36m.csv', index=True, index_label='date')
 IC_60m.to_csv(Path_Output+'IC_60m.csv', index=True, index_label='date')
 
-normal_ic_df.to_csv(Path_Output+'statistics_Normal_IC.csv', index=True)
-rank_ic_df.to_csv(Path_Output+'statistics_Rank_IC.csv', index=True)
+statistics_Normal_IC.to_csv(Path_Output+'statistics_Normal_IC.csv', index=True)
+statistics_Rank_IC.to_csv(Path_Output+'statistics_Rank_IC.csv', index=True)
 
