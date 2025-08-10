@@ -33,6 +33,7 @@ Path_Output    = os.path.join(Path_dir, 'Code/03  輸出資料/')
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
 from Top_Bottom_monthly_means import Top_Bottom_monthly_means
+from keep_month_range         import keep_month_range
 
 
 # %%  Import data
@@ -68,16 +69,8 @@ mom_60m.index = pd.to_datetime(mom_60m.index).strftime('%Y-%m')
 Period_START = '1987-12'
 Period_END   = '2024-11'
 
-def keep_month_range(df, start=Period_START, end=Period_END):
-    pidx = pd.PeriodIndex(pd.to_datetime(df.index).strftime('%Y-%m'), freq='M')
-    mask = (pidx >= pd.Period(start, freq='M')) & (pidx <= pd.Period(end, freq='M'))
-    out = df.loc[mask].copy()
-    out.index = pidx[mask].strftime('%Y-%m')
-    return out
-
-
 (stock_price, log_return, mom_01m, mom_06m, mom_12m, mom_36m, mom_60m) = [
-    keep_month_range(df) for df in
+    keep_month_range(df, Period_START, Period_END) for df in
     [stock_price, log_return, mom_01m, mom_06m, mom_12m, mom_36m, mom_60m]
 ]
 
@@ -104,6 +97,33 @@ counts_df.columns = names
 # %%  Filter return
 
 log_return_tradable = log_return.where(mom_01m.notna())
+
+
+# %%  Calculate the number of tradable stock
+
+monthly_non_nan_counts = mom_01m.count(axis=1).to_frame(name='non_nan_count')
+
+csv_path = os.path.join(Path_Output, 'monthly_non_nan_counts.csv')
+monthly_non_nan_counts.to_csv(csv_path)
+
+
+# %%  Plot the number of tradable stock
+
+import matplotlib.pyplot as plt
+
+monthly_non_nan_counts = mom_01m.count(axis=1)
+
+ax = monthly_non_nan_counts.plot(figsize=(7, 5), 
+                                 title='Number of Non-NaN Momentum per Month')
+ax.set_xlabel("Month")
+ax.set_ylabel("Number of Stocks")
+
+plt.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
+
+fig_path = os.path.join(Path_Output, 'monthly_non_nan_counts.png')
+plt.savefig(fig_path, dpi=300, bbox_inches='tight')
+
+plt.show()
 
 
 # %%  Top & Bottom monthly Return
