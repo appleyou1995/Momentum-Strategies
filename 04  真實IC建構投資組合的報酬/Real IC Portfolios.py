@@ -161,7 +161,7 @@ Portfolio_T_normal = Portfolio_normal.T
 Portfolio_T_rank   = Portfolio_rank.T
 
 
-# %%
+# %%  Calculate sharpe ratio
 
 def portfolio_analysis(df_T, annualize, periods_per_year=12):
 
@@ -190,19 +190,37 @@ def portfolio_analysis(df_T, annualize, periods_per_year=12):
     return out
 
 
-Portfolio_Analysis_normal = portfolio_analysis(Portfolio_T_normal, annualize=False).astype(float).round(3)
-Portfolio_Analysis_rank   = portfolio_analysis(Portfolio_T_rank,   annualize=False).astype(float).round(3)
+Portfolio_Analysis_normal = portfolio_analysis(Portfolio_T_normal, annualize=False).astype(float).round(4)
+Portfolio_Analysis_rank   = portfolio_analysis(Portfolio_T_rank,   annualize=False).astype(float).round(4)
+
+
+# %%  Whether the portfolio outperforms the S&P 500
+
+def portfolio_vs_sp500(df_T):
+
+    portfolios = ['portfolio_1%', 'portfolio_5%', 'portfolio_10%']
+    
+    # 取 SP500 的數值列
+    sp500_row = df_T.loc['SP500']
+    
+    # 比較，大於為 True(轉成1)，否則 False(轉成0)
+    comparison_df = df_T.loc[portfolios].gt(sp500_row, axis=1).astype(int)
+    comparison_df['outperform_ratio'] = comparison_df.mean(axis=1)
+    
+    return comparison_df
+
+
+Outperform_normal = portfolio_vs_sp500(Portfolio_T_normal)
+Outperform_rank   = portfolio_vs_sp500(Portfolio_T_rank)
+
+
+# %%  
+
+Portfolio_Analysis_normal = Portfolio_Analysis_normal.join(Outperform_normal['outperform_ratio']).astype(float).round(4)
+Portfolio_Analysis_rank = Portfolio_Analysis_rank.join(Outperform_rank['outperform_ratio']).astype(float).round(4)
 
 Portfolio_Analysis_normal.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_normal.csv'))
 Portfolio_Analysis_rank.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_rank.csv'))
-
-
-# %%  
-
-
-# %%  
-
-
 
 
 
