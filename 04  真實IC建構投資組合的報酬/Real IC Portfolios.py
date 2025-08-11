@@ -1,7 +1,6 @@
 import os
 import sys
 import pandas as pd
-import numpy  as np
 
 
 # %%  論文資料夾路徑
@@ -33,8 +32,9 @@ Path_Output   = os.path.join(Path_dir, 'Code/04  輸出資料')
 
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
-from keep_month_range import keep_month_range
-from build_portfolio  import build_portfolio
+from keep_month_range     import keep_month_range
+from portfolio_strategies import build_strategies
+from portfolio_analysis   import portfolio_analysis
 
 
 # %%
@@ -148,11 +148,23 @@ max_values_rank['tradable']   = tradable['non_nan_count']
 
 percentage_list = [0.01, 0.05, 0.1]
 
-Portfolio_normal = build_portfolio(max_values_normal, dict_Top_Bottom, percentage_list)
-Portfolio_rank   = build_portfolio(max_values_rank,   dict_Top_Bottom, percentage_list)
+strategy_list = [
+    'TB_BT',         # 1. TB / BT
+    'BuyT_BuyB',     # 2. BuyT / BuyB
+    'BuyT_SellB',    # 3. BuyT / SellB
+    'SellB_SellT',   # 4. SellB / SellT
+    'BuyT',          # 5. BuyT
+    'BuyB',          # 6. BuyB
+    'SellT',         # 7. SellT
+    'SellB',         # 8. SellB
+    'BuyTSellB'      # 9. BuyT and SellB simultaneously
+]
+
+Portfolio_normal = build_strategies(max_values_normal, dict_Top_Bottom, percentage_list, strategy_list)
+Portfolio_rank   = build_strategies(max_values_rank,   dict_Top_Bottom, percentage_list, strategy_list)
 
 
-# %%  Analysis
+# %%  Add S&P500 Return
 
 Portfolio_normal['SP500'] = SP500['SP500_next_period_return']
 Portfolio_rank['SP500']   = SP500['SP500_next_period_return']
@@ -161,63 +173,28 @@ Portfolio_T_normal = Portfolio_normal.T
 Portfolio_T_rank   = Portfolio_rank.T
 
 
-# %%  Calculate sharpe ratio
+# %%  Analysis
 
-def portfolio_analysis(df_T, annualize, periods_per_year=12):
+Portfolio_Analysis_normal = (
+    portfolio_analysis(
+        Portfolio_T_normal,
+        annualize=False,
+        strategy_list=strategy_list,
+        percentages=percentage_list
+    )
+)
 
-    rows = ['tradable', 'portfolio_1%', 'portfolio_5%', 'portfolio_10%', 'SP500']
-
-    # 只取數值欄位（各月份）
-    vals = df_T.loc[rows].apply(pd.to_numeric, errors='coerce')
-
-    means = vals.mean(axis=1)
-    stds  = vals.std(axis=1, ddof=1)
-
-    # Sharpe（對 returns 列計算；tradable 設為 NaN）
-    sharpe = means / stds
-    sharpe.loc['tradable'] = np.nan
-
-    if annualize:
-        # 年化 mean/std 的標準作法：Sharpe_annual = Sharpe * sqrt(periods_per_year)
-        sharpe = sharpe * np.sqrt(periods_per_year)
-
-    out = pd.DataFrame({
-        'mean': means,
-        'std': stds,
-        'sharpe': sharpe
-    }).loc[rows]
-
-    return out
+Portfolio_Analysis_rank = (
+    portfolio_analysis(
+        Portfolio_T_rank,
+        annualize=False,
+        strategy_list=strategy_list,
+        percentages=percentage_list
+    ).astype(float).round(4)
+)
 
 
-Portfolio_Analysis_normal = portfolio_analysis(Portfolio_T_normal, annualize=False).astype(float).round(4)
-Portfolio_Analysis_rank   = portfolio_analysis(Portfolio_T_rank,   annualize=False).astype(float).round(4)
-
-
-# %%  Whether the portfolio outperforms the S&P 500
-
-def portfolio_vs_sp500(df_T):
-
-    portfolios = ['portfolio_1%', 'portfolio_5%', 'portfolio_10%']
-    
-    # 取 SP500 的數值列
-    sp500_row = df_T.loc['SP500']
-    
-    # 比較，大於為 True(轉成1)，否則 False(轉成0)
-    comparison_df = df_T.loc[portfolios].gt(sp500_row, axis=1).astype(int)
-    comparison_df['outperform_ratio'] = comparison_df.mean(axis=1)
-    
-    return comparison_df
-
-
-Outperform_normal = portfolio_vs_sp500(Portfolio_T_normal)
-Outperform_rank   = portfolio_vs_sp500(Portfolio_T_rank)
-
-
-# %%  
-
-Portfolio_Analysis_normal = Portfolio_Analysis_normal.join(Outperform_normal['outperform_ratio']).astype(float).round(4)
-Portfolio_Analysis_rank = Portfolio_Analysis_rank.join(Outperform_rank['outperform_ratio']).astype(float).round(4)
+# %%  Output
 
 Portfolio_Analysis_normal.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_normal.csv'))
 Portfolio_Analysis_rank.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_rank.csv'))
