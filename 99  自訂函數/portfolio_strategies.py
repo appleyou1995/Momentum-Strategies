@@ -33,6 +33,7 @@ def _SellB(sign, top, bottom):
 def _BuyTSellB(sign, top, bottom):
     return top - bottom
 
+
 # -------------------------------------------------------------------------
 # 策略名稱與對應函數的映射
 # -------------------------------------------------------------------------
@@ -47,6 +48,7 @@ STRATEGY_FUNCS = {
     'SellB': _SellB,
     'BuyTSellB': _BuyTSellB,
 }
+
 
 # -------------------------------------------------------------------------
 # 單一策略計算
@@ -92,6 +94,7 @@ def build_portfolio(df_max, dict_Top_Bottom, percentages, strategy_name):
     add_df = df_max.apply(calc_row, axis=1, result_type='expand')
     return pd.concat([df_max, add_df], axis=1)
 
+
 # -------------------------------------------------------------------------
 # 多策略一次計算
 # -------------------------------------------------------------------------
@@ -103,3 +106,51 @@ def build_strategies(df_max, dict_Top_Bottom, percentages, strategy_list):
     for strategy_name in strategy_list:
         out = build_portfolio(out, dict_Top_Bottom, percentages, strategy_name)
     return out
+
+
+# -------------------------------------------------------------------------
+# 計算累積報酬率
+# -------------------------------------------------------------------------
+def build_cumulative_return(
+    df: pd.DataFrame,
+    strategy_plot,
+    sp500_name: str = "SP500",
+    exclude_rows=("max_abs_column","max_abs_value","original_value","tradable"),
+    prefix_match: bool = True,
+) -> pd.DataFrame:
+    """
+    df:  列=策略名稱、欄=月份(字串 'YYYY-MM' 或 Period)，元素=月度對數報酬
+    strategy_plot: 例如 ['TB_BT'] 或 ['TB_BT','BuyT_SellB']
+    sp500_name: SP500 那一列在 df 的名稱
+    exclude_rows: 要排除的資訊列
+    prefix_match: True 時用前綴比對 (e.g., 'TB_BT' 會抓到 'TB_BT_1%/5%/10%')
+                  False 時僅比對完整列名
+    回傳：只含所選策略+SP500 的「累積對數報酬」DataFrame（**往左相加**）
+    """
+    # 1) 列篩選
+    want = set()
+    for idx in df.index:
+        if idx in exclude_rows:
+            continue
+        if idx == sp500_name:
+            want.add(idx); continue
+        for s in strategy_plot:
+            if prefix_match:
+                if idx.startswith(s + "_") or idx == s:
+                    want.add(idx)
+            else:
+                if idx == s:
+                    want.add(idx)
+
+    sub = df.loc[[idx for idx in df.index if idx in want]].copy()
+
+    # 2) 確保為數值
+    sub = sub.apply(pd.to_numeric, errors="coerce")
+
+    # 3) 累積對數報酬
+    cumlog = sub.cumsum(axis=1)
+
+    return cumlog
+
+
+

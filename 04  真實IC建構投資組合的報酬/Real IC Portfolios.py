@@ -33,8 +33,9 @@ Path_Output   = os.path.join(Path_dir, 'Code/04  輸出資料')
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
 from keep_month_range     import keep_month_range
-from portfolio_strategies import build_strategies
+from portfolio_strategies import build_strategies, build_cumulative_return
 from portfolio_analysis   import portfolio_analysis
+from Plot                 import configure, plot_cumulative_return
 
 
 # %%
@@ -200,8 +201,16 @@ Portfolio_Analysis_normal.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_n
 Portfolio_Analysis_rank.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_rank.csv'))
 
 
+# %%  Calculate cumulative return
+
+strategy_plot = ['TB_BT']
+Portfolio_cumulative_return = build_cumulative_return(Portfolio_T_normal, strategy_plot)
 
 
+# %%  Plot
+
+configure()
+fig, ax = plot_cumulative_return(Portfolio_cumulative_return)
 
 
 
