@@ -153,4 +153,50 @@ def build_cumulative_return(
     return cumlog
 
 
+# -------------------------------------------------------------------------
+# 計算再投資報酬率
+# -------------------------------------------------------------------------
+def build_reinvested_return(
+    df: pd.DataFrame,
+    strategy_plot,
+    sp500_name: str = "SP500",
+    exclude_rows=("max_abs_column","max_abs_value","original_value","tradable"),
+    prefix_match: bool = True,
+    start_value: float = 1.0,
+    return_mode: str = "acc_ret",    # 'acc_ret' | 'wealth'
+) -> pd.DataFrame:
+    """
+    依策略前綴挑列後，計算「再投資」結果（輸入已為對數報酬）。
 
+    df:            列=策略/基準，欄=月份('YYYY-MM' 或 Period)，元素=月度「對數報酬」
+    strategy_plot: 例如 ['TB_BT'] 或 ['TB_BT','BuyT_SellB']
+    sp500_name:    基準列名（若有）
+    exclude_rows:  要排除的資訊列
+    prefix_match:  True=用前綴比對（'TB_BT' 抓到 'TB_BT_1%/5%/10%'）
+    start_value:   初始淨值
+    return_mode:   回傳型態：
+                   - 'acc_ret'：累積簡單報酬（從 0 起）
+                   - 'wealth'：淨值曲線（從 start_value 起）
+                   - 'both'：回傳 (acc_ret_df, wealth_df)
+    """
+    # 1) 列篩選
+    want = set()
+    for idx in df.index:
+        if idx in exclude_rows:
+            continue
+        if idx == sp500_name:
+            want.add(idx); continue
+        for s in strategy_plot:
+            if (prefix_match and (idx.startswith(s + "_") or idx == s)) or ((not prefix_match) and idx == s):
+                want.add(idx); break
+    sub = df.loc[[idx for idx in df.index if idx in want]].copy()
+
+    # 2) 轉數值
+    sub = sub.apply(pd.to_numeric, errors="coerce")
+
+    # 3) 再投資累積報酬
+    acc_log = sub.cumsum(axis=1)
+    wealth  = start_value * np.exp(acc_log)
+    acc_ret = np.expm1(acc_log)
+
+    return wealth if return_mode == "wealth" else acc_ret

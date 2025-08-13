@@ -135,7 +135,30 @@ def plot_cumulative_return(df: pd.DataFrame,
     return fig, ax
 
 
+# Reinvested Return
 
+def plot_reinvested_return(df: pd.DataFrame,
+                           xlabel="",
+                           ylabel="",
+                           legend_loc="best",
+                           figsize=(6, 4)):
+    df = df.copy()
+    df.index = rename_strategy_index(df.index)
+    
+    fig, ax = fig_ax(figsize=figsize)
+    df.T.plot(ax=ax)
+    
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title("")
+    ax.legend(loc=legend_loc, frameon=False)
+    ax.tick_params(axis="x", rotation=0)
+    
+    # 使用對數縱軸
+    ax.set_yscale("log")
+    
+    fig.tight_layout()    
+    return fig, ax
 
 
 

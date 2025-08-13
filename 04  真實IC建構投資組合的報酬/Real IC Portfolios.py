@@ -33,9 +33,9 @@ Path_Output   = os.path.join(Path_dir, 'Code/04  輸出資料')
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
 from keep_month_range     import keep_month_range
-from portfolio_strategies import build_strategies, build_cumulative_return
+from portfolio_strategies import build_strategies, build_cumulative_return, build_reinvested_return
 from portfolio_analysis   import portfolio_analysis
-from Plot                 import configure, plot_cumulative_return
+from Plot                 import configure, plot_cumulative_return, plot_reinvested_return
 
 
 # %%
@@ -201,20 +201,31 @@ Portfolio_Analysis_normal.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_n
 Portfolio_Analysis_rank.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_rank.csv'))
 
 
-# %%  Calculate cumulative return
+# %%  Calculate cumulative return and reinvested return
 
 strategy_plot = ['TB_BT']
 Portfolio_cumulative_return = build_cumulative_return(Portfolio_T_normal, strategy_plot)
+Portfolio_reinvested_return = build_reinvested_return(Portfolio_T_normal, strategy_plot)
 
 
-# %%  Plot
+# %%  Plot cumulative return
 
 configure()
-fig, ax = plot_cumulative_return(Portfolio_cumulative_return)
+fig_cumulative, ax = plot_cumulative_return(Portfolio_cumulative_return)
 
 
+# %%  Plot reinvested return
+
+configure()
+fig_reinvested, ax = plot_reinvested_return(Portfolio_reinvested_return)
 
 
+# %%  Plot output
 
+strategy_str = "_".join(strategy_plot)
 
+filename = os.path.join(Path_Output, f"Plot_Real_IC_cumulative_return_{strategy_str}.pdf")
+fig_cumulative.savefig(filename, format="pdf")
 
+filename = os.path.join(Path_Output, f"Plot_Real_IC_reinvested_return_{strategy_str}.pdf")
+fig_reinvested.savefig(filename, format="pdf")
