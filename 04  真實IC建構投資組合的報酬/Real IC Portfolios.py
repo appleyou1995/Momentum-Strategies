@@ -32,15 +32,15 @@ Path_Output   = os.path.join(Path_dir, 'Code/04  輸出資料')
 
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
-from keep_month_range     import keep_month_range
-from portfolio_strategies import (
+from filter_by_month_range import filter_by_month_range
+from portfolio_strategies  import (
     get_max_abs_IC_factor,
     build_strategies,
     build_cumulative_return,
     build_reinvested_return
 )
-from portfolio_analysis   import portfolio_analysis
-from Plot                 import (
+from portfolio_analysis    import portfolio_analysis
+from plot                  import (
     configure, 
     plot_cumulative_return, 
     plot_reinvested_return
@@ -58,7 +58,7 @@ horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
 # %%  Import S&P500
 
 SP500 = pd.read_csv(os.path.join(Path_Input_01, 'SP500.csv'), index_col='date')
-SP500 = keep_month_range(SP500, Period_START, Period_END)
+SP500 = filter_by_month_range(SP500, Period_START, Period_END)
 
 
 # %%  Import real IC
@@ -70,7 +70,7 @@ for horizon in horizon_name_list:
     df = pd.read_csv(fp, index_col='date')
     df.index = pd.to_datetime(df.index).strftime('%Y-%m')
     df.columns = df.columns.astype(str)
-    dict_IC[f'IC_{horizon}'] = keep_month_range(df, Period_START, Period_END)
+    dict_IC[f'IC_{horizon}'] = filter_by_month_range(df, Period_START, Period_END)
 
 del fp, df, horizon
 

@@ -30,8 +30,8 @@ Path_Output = os.path.join(Path_dir, 'Code/02  輸出資料/')
 
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
-from Information_Coefficient import Information_Coefficient
-from calculate_statistics    import calculate_statistics
+from calculate_information_coefficient import calculate_information_coefficient
+from calculate_statistics              import calculate_statistics
 
 
 # %%  Import individual stock price
@@ -41,11 +41,11 @@ df_stock_price = pd.read_csv(os.path.join(Path_Input, 'Individual_stock_price_ma
 
 # %%  計算 momentum、IC 值
 
-mom_01m, IC_01m = Information_Coefficient(df_stock_price, 1)
-mom_06m, IC_06m = Information_Coefficient(df_stock_price, 6)
-mom_12m, IC_12m = Information_Coefficient(df_stock_price, 12)
-mom_36m, IC_36m = Information_Coefficient(df_stock_price, 36)
-mom_60m, IC_60m = Information_Coefficient(df_stock_price, 60)
+mom_01m, IC_01m = calculate_information_coefficient(df_stock_price, 1)
+mom_06m, IC_06m = calculate_information_coefficient(df_stock_price, 6)
+mom_12m, IC_12m = calculate_information_coefficient(df_stock_price, 12)
+mom_36m, IC_36m = calculate_information_coefficient(df_stock_price, 36)
+mom_60m, IC_60m = calculate_information_coefficient(df_stock_price, 60)
 
 
 # %%  Statistics

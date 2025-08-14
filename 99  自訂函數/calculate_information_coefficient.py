@@ -11,7 +11,7 @@ from scipy.stats import pearsonr, spearmanr
 
 # %%  Function
 
-def Information_Coefficient(df_price, h_period):
+def calculate_information_coefficient(df_price, h_period):
     
     # Calculate log return: R_{t} = ln(S_{t+1}/S_{t})
     log_return = np.log(df_price.shift(-1, axis=1) / df_price)

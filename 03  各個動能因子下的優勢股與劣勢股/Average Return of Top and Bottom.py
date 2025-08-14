@@ -32,8 +32,8 @@ Path_Output    = os.path.join(Path_dir, 'Code/03  輸出資料/')
 
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
-from Top_Bottom_monthly_means import Top_Bottom_monthly_means
-from keep_month_range         import keep_month_range
+from calculate_top_bottom_monthly_means import calculate_top_bottom_monthly_means
+from filter_by_month_range              import filter_by_month_range
 
 
 # %%  Import data
@@ -70,7 +70,7 @@ Period_START = '1987-12'
 Period_END   = '2024-11'
 
 (stock_price, log_return, mom_01m, mom_06m, mom_12m, mom_36m, mom_60m) = [
-    keep_month_range(df, Period_START, Period_END) for df in
+    filter_by_month_range(df, Period_START, Period_END) for df in
     [stock_price, log_return, mom_01m, mom_06m, mom_12m, mom_36m, mom_60m]
 ]
 
@@ -141,7 +141,7 @@ os.makedirs(Path_Output, exist_ok=True)
 # %%  Output result to pickle
 
 for mom_df, horizon in zip(mom_list, horizon_name_list):
-    result = Top_Bottom_monthly_means(log_return_tradable, mom_df, percentage_list)
+    result = calculate_top_bottom_monthly_means(log_return_tradable, mom_df, percentage_list)
     file_path = os.path.join(Path_Output, f"Top_Bottom_monthly_mean_{horizon}.pkl")
     result.to_pickle(file_path)
 

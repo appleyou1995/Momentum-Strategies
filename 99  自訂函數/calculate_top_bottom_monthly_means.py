@@ -4,9 +4,9 @@ import pandas as pd
 
 # %%
 
-def Top_Bottom_monthly_means(log_return_tradable: pd.DataFrame,
-                             mom: pd.DataFrame,
-                             percentages) -> pd.DataFrame:
+def calculate_top_bottom_monthly_means(log_return_tradable: pd.DataFrame,
+                                       mom: pd.DataFrame,
+                                       percentages) -> pd.DataFrame:
     """
     依據 mom 的排序，計算每月各百分比的 top/bottom log_return_tradable 平均值與檔數。
     - percentages: 可為單一數值 (如 0.1) 或 list/tuple (如 [0.01, 0.05, 0.1])
