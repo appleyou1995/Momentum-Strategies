@@ -4,6 +4,21 @@ import numpy  as np
 # %%
 
 # -------------------------------------------------------------------------
+# 每月取絕對值後最大的 IC
+# -------------------------------------------------------------------------
+def get_max_abs_IC_factor(IC_df):    
+    max_columns = IC_df.abs().idxmax(axis=1)
+    max_values = pd.DataFrame({
+        "max_abs_column": max_columns,
+        "max_abs_value": IC_df.abs().max(axis=1),
+    })
+    max_values["original_value"] = max_values.apply(
+        lambda row: IC_df.loc[row.name, row["max_abs_column"]], axis=1
+    )
+    return max_values.sort_index(ascending=True)
+
+
+# -------------------------------------------------------------------------
 # 定義每種策略計算方式（輸入 sign, top, bottom）
 # -------------------------------------------------------------------------
 def _TB_BT(sign, top, bottom):

@@ -33,9 +33,18 @@ Path_Output   = os.path.join(Path_dir, 'Code/04  輸出資料')
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
 from keep_month_range     import keep_month_range
-from portfolio_strategies import build_strategies, build_cumulative_return, build_reinvested_return
+from portfolio_strategies import (
+    get_max_abs_IC_factor,
+    build_strategies,
+    build_cumulative_return,
+    build_reinvested_return
+)
 from portfolio_analysis   import portfolio_analysis
-from Plot                 import configure, plot_cumulative_return, plot_reinvested_return
+from Plot                 import (
+    configure, 
+    plot_cumulative_return, 
+    plot_reinvested_return
+)
 
 
 # %%
@@ -92,24 +101,10 @@ IC_rank   = IC_rank.sort_index(ascending=True).dropna()
 del normal_ic_list, rank_ic_list
 
 
-# %%  函數：Normal & Rank IC 每月取絕對值後的最大值
-
-def get_max_ic_info(IC_df):    
-    max_columns = IC_df.abs().idxmax(axis=1)
-    max_values = pd.DataFrame({
-        "max_abs_column": max_columns,
-        "max_abs_value": IC_df.abs().max(axis=1),
-    })
-    max_values["original_value"] = max_values.apply(
-        lambda row: IC_df.loc[row.name, row["max_abs_column"]], axis=1
-    )
-    return max_values.sort_index(ascending=True)
-
-
 # %%  計算 Normal & Rank IC 每月取絕對值後的最大值
 
-max_values_normal = get_max_ic_info(IC_normal)
-max_values_rank   = get_max_ic_info(IC_rank)
+max_values_normal = get_max_abs_IC_factor(IC_normal)
+max_values_rank   = get_max_abs_IC_factor(IC_rank)
 
 
 # %%  Import Momentum
@@ -195,7 +190,7 @@ Portfolio_Analysis_rank = (
 )
 
 
-# %%  Output
+# %%  Output: dataframe
 
 Portfolio_Analysis_normal.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_normal.csv'))
 Portfolio_Analysis_rank.to_csv(os.path.join(Path_Output, 'Portfolio_Analysis_rank.csv'))
@@ -220,7 +215,7 @@ configure()
 fig_reinvested, ax = plot_reinvested_return(Portfolio_reinvested_return)
 
 
-# %%  Plot output
+# %%  Output: plot
 
 strategy_str = "_".join(strategy_plot)
 
