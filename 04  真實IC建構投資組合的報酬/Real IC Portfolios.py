@@ -118,7 +118,7 @@ max_values_rank   = get_max_abs_IC_factor(IC_rank)
 #     df.index = pd.to_datetime(df.index).strftime('%Y-%m')
 #     df.columns = df.columns.astype(str)
     
-#     dict_mom[f'mom_{horizon}'] = keep_month_range(df, Period_START, Period_END)
+#     dict_mom[f'mom_{horizon}'] = filter_by_month_range(df, Period_START, Period_END)
 
 
 # %%  Import Top & Bottom monthly Return
