@@ -22,84 +22,118 @@ Path_dir = os.path.join(Path_Win, Path_PaperFolder)
 
 # %%  Input and Output Path
 
-Path_Input  = os.path.join(Path_dir, 'Code/01  輸出資料/')
-Path_Output = os.path.join(Path_dir, 'Code/02  輸出資料/')
+Path_Input_02 = os.path.join(Path_dir, 'Code/02  輸出資料/')
+Path_Output   = os.path.join(Path_dir, 'Code/02  輸出資料/')
 
 
 # %%  Import function
 
 sys.path.append(Path_dir+'/Code/99  自訂函數')
 
-from predict_IC              import predict_IC
+from predict_information_coefficient import predict_information_coefficient
+
+
+# %%
+
+# Period_START = '1987-12'
+# Period_END   = '2024-11'
+
+horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
+
+
+# %%  Import Momentum
+
+dict_mom = {}
+
+for horizon in horizon_name_list:
+    fp = os.path.join(Path_Input_02, f'mom_{horizon}.csv')
+    df = pd.read_csv(fp, index_col='date')
+    
+    df.index = pd.to_datetime(df.index).strftime('%Y-%m')
+    df.columns = df.columns.astype(str)
+    
+    # dict_mom[f'mom_{horizon}'] = filter_by_month_range(df, Period_START, Period_END)
+    dict_mom[f'mom_{horizon}'] = df
+
+del fp, df, horizon
+
+
+# %%  Import IC
+
+dict_IC = {}
+
+for horizon in horizon_name_list:
+    fp = os.path.join(Path_Input_02, f'IC_{horizon}.csv')
+    df = pd.read_csv(fp, index_col='date')
+    
+    df.index = pd.to_datetime(df.index).strftime('%Y-%m')
+    df.columns = df.columns.astype(str)
+    
+    # dict_IC[f'IC_{horizon}'] = filter_by_month_range(df, Period_START, Period_END)
+    dict_IC[f'IC_{horizon}'] = df
+
+del fp, df, horizon
+
+
+# %%  設定不同 Y 欄位（Normal IC / Rank IC）
+
+df_Y_Normal = {}
+df_Y_Rank   = {}
+
+for key, df in dict_IC.items():
+    df_Y_Normal[key] = df[['Normal_IC']]
+    df_Y_Rank[key]   = df[['Rank_IC']]
+
+del key, df
 
 
 # %%  模型設定
 
-# 設定迴圈次數
-n_loops = 100
-
 # 設定每次迴圈的間隔月份
 month_step = -1
 
+# 設定迴圈次數
+n_loops = 100
+
 # 設定隨機種子以確保結果的可重現性
-my_seed = 42
+seed = 999
 
 # 設定驗證集 window 長度（以月為單位）
-window_length = 96
+window_length = 120
 
 # 設定預測 horizon
 horizon = 1
 
 
-# %%  設定不同 Y 欄位（Normal IC / Rank IC）
-
-df_Y_01m_normal = IC_01m[['Normal_IC']]
-df_Y_01m_rank   = IC_01m[['Rank_IC']]
-
-df_Y_06m_normal = IC_06m[['Normal_IC']]
-df_Y_06m_rank   = IC_06m[['Rank_IC']]
-
-df_Y_12m_normal = IC_12m[['Normal_IC']]
-df_Y_12m_rank   = IC_12m[['Rank_IC']]
-
-df_Y_36m_normal = IC_36m[['Normal_IC']]
-df_Y_36m_rank   = IC_36m[['Rank_IC']]
-
-df_Y_60m_normal = IC_60m[['Normal_IC']]
-df_Y_60m_rank   = IC_60m[['Rank_IC']]
-
-
 # %%  預測 IC
 
-# Rank IC
-predict_IC_01m_rank = predict_IC(mom_01m, df_Y_01m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_01m_rank.to_csv(Path_Output + 'predict_IC_01m_rank.csv', index=False)
-
-predict_IC_06m_rank = predict_IC(mom_06m, df_Y_06m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_06m_rank.to_csv(Path_Output + 'predict_IC_06m_rank.csv', index=False)
-
-predict_IC_12m_rank = predict_IC(mom_12m, df_Y_12m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_12m_rank.to_csv(Path_Output + 'predict_IC_12m_rank.csv', index=False)
-
-predict_IC_36m_rank = predict_IC(mom_36m, df_Y_36m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_36m_rank.to_csv(Path_Output + 'predict_IC_36m_rank.csv', index=False)
-
-predict_IC_60m_rank = predict_IC(mom_60m, df_Y_60m_rank, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_60m_rank.to_csv(Path_Output + 'predict_IC_60m_rank.csv', index=False)
-
-
 # Normal IC
-predict_IC_01m_normal = predict_IC(mom_01m, df_Y_01m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_01m_normal.to_csv(Path_Output + 'predict_IC_01m_normal.csv', index=False)
+for h in horizon_name_list:
+    df_pred = predict_information_coefficient(
+        dict_mom[f'mom_{h}'],
+        df_Y_Normal[f'IC_{h}'],
+        month_step,
+        n_loops,
+        seed,
+        window_length,
+        horizon
+    )
 
-predict_IC_06m_normal = predict_IC(mom_06m, df_Y_06m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_06m_normal.to_csv(Path_Output + 'predict_IC_06m_normal.csv', index=False)
+    df_pred.to_csv(Path_Output + f'predict_Normal_IC_{h}.csv', index=False)
 
-predict_IC_12m_normal = predict_IC(mom_12m, df_Y_12m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_12m_normal.to_csv(Path_Output + 'predict_IC_12m_normal.csv', index=False)
 
-predict_IC_36m_normal = predict_IC(mom_36m, df_Y_36m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_36m_normal.to_csv(Path_Output + 'predict_IC_36m_normal.csv', index=False)
+# Rank IC
+for h in horizon_name_list:
+    df_pred = predict_information_coefficient(
+        dict_mom[f'mom_{h}'],
+        df_Y_Rank[f'IC_{h}'],
+        month_step,
+        n_loops,
+        seed,
+        window_length,
+        horizon
+    )
 
-predict_IC_60m_normal = predict_IC(mom_60m, df_Y_60m_normal, month_step, n_loops, my_seed, window_length, horizon)
-predict_IC_60m_normal.to_csv(Path_Output + 'predict_IC_60m_normal.csv', index=False)
+    df_pred.to_csv(Path_Output + f'predict_Rank_IC_{h}.csv', index=False)
+
+

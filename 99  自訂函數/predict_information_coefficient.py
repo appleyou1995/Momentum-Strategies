@@ -19,14 +19,6 @@ def predict_information_coefficient(df_X, df_Y,
                month_step, n_loops, seed, 
                window_length, horizon, verbose=True):
     
-    def get_year_month(date_str, month_offset):
-        year = int(date_str[:4])
-        month = int(date_str[5:7])
-        month = month + month_offset
-        year = year + (month - 1) // 12
-        month = (month - 1) % 12 + 1
-        return year, month
-    
     # 自動取得 start_date_str
     start_date_str = df_X.index[-1]
     
@@ -46,10 +38,12 @@ def predict_information_coefficient(df_X, df_Y,
         tf.keras.backend.clear_session()
         gc.collect()
     
-        year, month = get_year_month(start_date_str, i * month_step)
+        # 直接用日期字串 (YYYY-MM)，並加上 offset
+        # 利用 pandas 的 period 功能來處理月份加總
+        current_date = (pd.Period(start_date_str, freq="M") + i * month_step).strftime("%Y-%m")
         
         if verbose:
-            print("Current iteration: {}  [ {}-{} ]".format(i, year, str(month).zfill(2)))
+            print("Current iteration: {}  [ {} ]".format(i, current_date))
         
         ### 樣本切割
         # 全模型通用訓練集
@@ -121,11 +115,11 @@ def predict_information_coefficient(df_X, df_Y,
         prednn5  = model_NN5.predict(test_data)[0][0].astype(np.float64)
         
         ### 加入結果
-        predict_IC.append((year, month, pred, predregr, prednn1, prednn2, prednn3, prednn4, prednn5))
+        predict_IC.append((current_date, pred, predregr, prednn1, prednn2, prednn3, prednn4, prednn5))
     
     # 輸出 DataFrame
     df_predict_IC = pd.DataFrame(predict_IC, 
-                                 columns=['year', 'month', 'Linear', 'RandomForest', 
+                                 columns=['date', 'Linear', 'RandomForest', 
                                           'NN1', 'NN2', 'NN3', 'NN4', 'NN5'])
     
     return df_predict_IC
