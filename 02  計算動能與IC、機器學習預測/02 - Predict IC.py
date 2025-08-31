@@ -33,10 +33,7 @@ sys.path.append(Path_dir+'/Code/99  自訂函數')
 from predict_information_coefficient import predict_information_coefficient
 
 
-# %%
-
-# Period_START = '1987-12'
-# Period_END   = '2024-11'
+# %%  Define horizon_name_list
 
 horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
 
@@ -89,20 +86,11 @@ del key, df
 
 # %%  模型設定
 
-# 設定每次迴圈的間隔月份
-month_step = -1
-
-# 設定迴圈次數
-n_loops = 100
-
-# 設定隨機種子以確保結果的可重現性
-seed = 999
-
 # 設定驗證集 window 長度（以月為單位）
-window_length = 120
+valid_length = 120
 
-# 設定預測 horizon
-horizon = 1
+# 設定測試集開始月份
+test_start_date = '1987-12'
 
 
 # %%  預測 IC
@@ -112,11 +100,8 @@ for h in horizon_name_list:
     df_pred = predict_information_coefficient(
         dict_mom[f'mom_{h}'],
         df_Y_Normal[f'IC_{h}'],
-        month_step,
-        n_loops,
-        seed,
-        window_length,
-        horizon
+        test_start_date,
+        valid_length
     )
 
     df_pred.to_csv(Path_Output + f'predict_Normal_IC_{h}.csv', index=False)
@@ -127,11 +112,8 @@ for h in horizon_name_list:
     df_pred = predict_information_coefficient(
         dict_mom[f'mom_{h}'],
         df_Y_Rank[f'IC_{h}'],
-        month_step,
-        n_loops,
-        seed,
-        window_length,
-        horizon
+        test_start_date,
+        valid_length
     )
 
     df_pred.to_csv(Path_Output + f'predict_Rank_IC_{h}.csv', index=False)
