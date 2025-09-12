@@ -23,7 +23,7 @@ Path_dir = os.path.join(Path_Win, Path_PaperFolder)
 # %%  Input and Output Path
 
 Path_Input_02 = os.path.join(Path_dir, 'Code/02  輸出資料/')
-Path_Output   = os.path.join(Path_dir, 'Code/02  輸出資料/')
+Path_Output   = os.path.join(Path_dir, 'Code/05  輸出資料/')
 
 
 # %%  Import function
@@ -35,7 +35,8 @@ from predict_information_coefficient import predict_information_coefficient
 
 # %%  Define horizon_name_list
 
-horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
+# horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
+horizon_name_list = ['12m', '36m', '60m']
 
 
 # %%  Import Momentum
@@ -93,29 +94,23 @@ valid_length = 120
 test_start_date = '1987-12'
 
 
-# %%  預測 IC
+# %%  預測 Normal IC
 
-# Normal IC
+# All Models:
+# ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'GLM+H', 'GBRT+H', 'RF', 'NN']
+
+models = ['RF']
+
 for h in horizon_name_list:
-    df_pred = predict_information_coefficient(
+    df_out = predict_information_coefficient(
         dict_mom[f'mom_{h}'],
         df_Y_Normal[f'IC_{h}'],
         test_start_date,
-        valid_length
+        valid_length,
+        models,
+        Path_Output,
+        h,
+        True,
     )
-
-    df_pred.to_csv(Path_Output + f'predict_Normal_IC_{h}.csv', index=False)
-
-
-# Rank IC
-for h in horizon_name_list:
-    df_pred = predict_information_coefficient(
-        dict_mom[f'mom_{h}'],
-        df_Y_Rank[f'IC_{h}'],
-        test_start_date,
-        valid_length
-    )
-
-    df_pred.to_csv(Path_Output + f'predict_Rank_IC_{h}.csv', index=False)
 
 
