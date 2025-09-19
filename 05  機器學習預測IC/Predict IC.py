@@ -1,5 +1,4 @@
 import os
-import sys
 import pandas as pd
 
 
@@ -28,15 +27,12 @@ Path_Output   = os.path.join(Path_dir, 'Code/05  輸出資料/')
 
 # %%  Import function
 
-sys.path.append(Path_dir+'/Code/99  自訂函數')
-
-from predict_information_coefficient import predict_information_coefficient
+from function_predict_information_coefficient import predict_information_coefficient
 
 
 # %%  Define horizon_name_list
 
-# horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
-horizon_name_list = ['12m', '36m', '60m']
+horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
 
 
 # %%  Import Momentum
@@ -76,11 +72,9 @@ del fp, df, horizon
 # %%  設定不同 Y 欄位（Normal IC / Rank IC）
 
 df_Y_Normal = {}
-df_Y_Rank   = {}
 
 for key, df in dict_IC.items():
     df_Y_Normal[key] = df[['Normal_IC']]
-    df_Y_Rank[key]   = df[['Rank_IC']]
 
 del key, df
 
@@ -99,7 +93,7 @@ test_start_date = '1987-12'
 # All Models:
 # ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'GLM+H', 'GBRT+H', 'RF', 'NN']
 
-models = ['RF']
+models = ['NN1']
 
 for h in horizon_name_list:
     df_out = predict_information_coefficient(
@@ -112,5 +106,21 @@ for h in horizon_name_list:
         h,
         True,
     )
+
+
+# %%  Sigle horizon R^2
+
+def r2_oos_no_demean(y_true, y_pred):
+    sse = ((y_true - y_pred) ** 2).sum()
+    sst = (y_true ** 2).sum()
+    return 1.0 - sse / sst
+
+df_out = df_out.set_index('date')
+trueIC = df_Y_Normal[f'IC_{h}'][['Normal_IC']]
+merged = df_out.merge(trueIC, left_index=True, right_index=True, how='left')
+
+y_pred, y_true = merged.iloc[:, 0], merged.iloc[:, 1]
+
+print((r2_oos_no_demean(y_true, y_pred) * 100).round(4))
 
 
