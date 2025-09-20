@@ -44,9 +44,9 @@ Period_END   = '2024-11'
 horizon_name_list = ['01m', '06m', '12m', '36m', '60m']
 
 # All Models:
-# ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'GLM+H', 'GBRT+H', 'RF', 'NN']
+# ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'GLM+H', 'GBRT+H', 'RF', 'NN1', 'NN2', 'NN3', 'NN4', 'NN5']
 
-models = ['OLS', 'ENet+H', 'PCR', 'PLS', 'RF', 'NN1', 'NN2', 'NN3', 'NN4', 'NN5']
+models = ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'RF', 'NN1', 'NN2', 'NN3', 'NN4', 'NN5']
 
 
 # %%  Import realized IC
@@ -80,8 +80,6 @@ def load_pred_table(path_05, horizons, models):
     wide = pd.concat(frames, axis=1).sort_index()
     return wide
 
-pred_wide = load_pred_table(Path_Input_05, horizon_name_list, models)
-
 
 # %%  Function of OOS R^2 (without demeaning)
 
@@ -94,15 +92,11 @@ def r2_oos(y_true, y_pred):
     return 1.0 - e2/sst
 
 
-# %%
-
-def r2_standard(y_true, y_pred):
-    df = pd.concat([y_true, y_pred], axis=1, join='inner').dropna()
-    return r2_score(df.iloc[:,0], df.iloc[:,1])
-
-
 # %%  Compute OOS R^2
 
+models = ['OLS+H']
+
+pred_wide = load_pred_table(Path_Input_05, horizon_name_list, models)
 R_square = pd.DataFrame(index=horizon_name_list, columns=models, dtype=float)
 
 for h in horizon_name_list:
@@ -111,13 +105,41 @@ for h in horizon_name_list:
         yhat = pred_wide[(m, h)].rename('pred')
         R_square.loc[h, m] = r2_oos(y, yhat) * 100
 
-R_square = R_square.round(2)
+
+def concat_over_horizons(series_dict):
+    parts = []
+    for h, s in series_dict.items():
+        s2 = s.copy()
+        s2.index = pd.MultiIndex.from_product([[h], s2.index], names=['horizon','date'])
+        parts.append(s2)
+    return pd.concat(parts).sort_index()
+
+all_row = {}
+for m in models:
+    y_dict = {h: dict_IC[f'IC_{h}']['Normal_IC'] for h in horizon_name_list}
+    y_all   = concat_over_horizons(y_dict)
+    
+    yhat_dict = {h: pred_wide[(m, h)].rename('pred') for h in horizon_name_list}
+    yhat_all  = concat_over_horizons(yhat_dict)
+
+    y_all_aligned, yhat_all_aligned = y_all.align(yhat_all, join='inner')
+    all_row[m] = r2_oos(y_all_aligned, yhat_all_aligned) * 100
+    print(f'[ {m} ]  {all_row[m].round(4)}')
+
+R_square.loc['All'] = pd.Series(all_row)
+
+R_square = R_square.round(4)
 R_square.index.name = 'Horizon'
 
-R_square.to_csv(Path_Output+'R_square.csv', index=True)
+
+# R_square.to_csv(Path_Output+'R_square.csv', index=True)
 
 
-# %%
+# %%  Check: demean
+
+def r2_standard(y_true, y_pred):
+    df = pd.concat([y_true, y_pred], axis=1, join='inner').dropna()
+    return r2_score(df.iloc[:,0], df.iloc[:,1])
 
 R_square_demean = pd.DataFrame(index=horizon_name_list, columns=models, dtype=float)
 
@@ -131,7 +153,7 @@ R_square_demean = R_square_demean.round(2)
 R_square_demean.index.name = 'Horizon'
 
 
-# %%
+# %%  Check: plot
 
 import matplotlib.pyplot as plt
 
