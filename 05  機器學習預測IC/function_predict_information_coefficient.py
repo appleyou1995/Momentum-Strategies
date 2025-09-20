@@ -1,8 +1,8 @@
-import os, warnings
-# import gc
+import os, random, warnings
 
 # ===== 設環境變數 =====
 seed = 999
+os.environ['TF_DETERMINISTIC_OPS'] = '1'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'   # 只顯示 ERROR，其他 INFO、WARNING 不顯示
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # 強制用 CPU 訓練，確保隨機種子固定
 os.environ['PYTHONHASHSEED'] = str(seed)   # 固定 Python hash 隨機性
@@ -13,27 +13,14 @@ import pandas     as pd
 import tensorflow as tf
 
 # ========= sklearn =========
-# from sklearn.linear_model        import LinearRegression, HuberRegressor, SGDRegressor
-# from sklearn.ensemble            import RandomForestRegressor, GradientBoostingRegressor
-# from sklearn.decomposition       import PCA
-# from sklearn.pipeline            import make_pipeline
-# from sklearn.cross_decomposition import PLSRegression
-# from sklearn.preprocessing       import SplineTransformer
-# from sklearn.metrics             import mean_squared_error
-from sklearn.exceptions          import ConvergenceWarning
+from sklearn.exceptions import ConvergenceWarning
 
-# ========= keras =========
-# from tensorflow.keras.layers     import Dense, Input
-# from tensorflow.keras.models     import Sequential
-# from tensorflow.keras.callbacks  import EarlyStopping
+# ========= random seed =========
+tf.keras.utils.set_random_seed(seed)
+random.seed(seed)
+np.random.seed(seed)
 
-# ========= cvxpy（精確的 group-lasso + Huber）=========
-# import cvxpy as cp
-
-# ===== 設定隨機種子 =====
-tf.keras.utils.set_random_seed(seed)       # 同時固定 random、numpy、tensorflow 的隨機性
-
-# ===== 隱藏 warning =====
+# ========= warning =========
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=ConvergenceWarning)  # 關掉 HuberRegressor 收斂警告
 warnings.filterwarnings(
@@ -44,7 +31,7 @@ warnings.filterwarnings(
 tf.get_logger().setLevel("ERROR") # NN1–NN5：把所有 INFO 和 WARNING 訊息關掉，只留下錯誤
 
 
-# %%  Utilities
+# %%  Utility
 
 def fillna_by_row_median_inplace(X):
     # 以列中位數填 NaN；回傳新陣列（float32）
@@ -65,205 +52,7 @@ from model_pls        import model_PLS
 from model_glm_huber  import model_GLM_Huber
 from model_gbrt_huber import model_GBRT_Huber
 from model_rf         import model_RF
-from model_nn         import model_NN, layers_dict, early_stopping
-
-
-# # %%  2-1) OLS
-
-# def model_OLS(X, Y, X_test):
-#     reg = LinearRegression().fit(X, Y.ravel())
-#     return float(reg.predict(X_test)[0])
-
-
-# # %%  2-2) OLS+H
-
-# def model_OLS_Huber(X, Y, X_test):
-#     m = HuberRegressor(epsilon=1.35, alpha=0.0, fit_intercept=True, max_iter=1000)
-#     m.fit(X, Y.ravel())
-#     return float(m.predict(X_test)[0])
-
-
-# # %%  2-3) ENet+H
-
-# def model_ENet_Huber(X, Y, X_test, seed=999):
-#     m = SGDRegressor(loss='huber', penalty='elasticnet',
-#                      alpha=3e-3, l1_ratio=0.9, epsilon=0.05,
-#                      max_iter=3000, tol=1e-4, random_state=seed)
-#     m.fit(X, Y.ravel())
-#     return float(m.predict(X_test)[0])
-
-
-# # %%  2-4) PCR
-
-# def model_PCR(X, Y, X_test, K_max=20):
-#     K = int(min(K_max, X.shape[1], max(1, X.shape[0]-1)))
-#     pipe = make_pipeline(PCA(n_components=K), LinearRegression())
-#     pipe.fit(X, Y.ravel())
-#     return float(pipe.predict(X_test)[0])
-
-
-# # %%  2-5) PLS
-
-# def model_PLS(X, Y, X_test, K=3):
-#     k_use = int(min(K, X.shape[1], max(1, X.shape[0]-1)))
-#     m = PLSRegression(n_components=k_use).fit(X, Y.ravel())
-#     return float(m.predict(X_test)[0])
-
-
-# # %%  2-6) GLM+H
-
-# def choose_solver():
-#     # 選擇已安裝的解器，依偏好順序回傳
-#     installed = set(cp.installed_solvers())
-#     for s in ("OSQP", "SCS", "ECOS"):
-#         if s in installed:
-#             return s
-#     return None
-
-# # GLM + H (Huber) with Group-Lasso via CVXPY
-# # - group = 同一個「原始特徵」展開後的所有樣條基底
-
-# def spline_design_and_groups(X_raw, degree=3, n_knots=5):
-#     # 將原始 X 做 Spline 展開，並回傳 groups 向量（以原始特徵為組）。
-#     spl = SplineTransformer(degree=degree, n_knots=n_knots, include_bias=False)
-#     Xs = spl.fit_transform(X_raw)   # (n, p_spline)
-#     n_feat = X_raw.shape[1]
-#     width = Xs.shape[1] // n_feat   # 每個特徵展開的基底數
-#     groups = np.repeat(np.arange(n_feat), width)
-#     return Xs.astype(np.float32), groups.astype(int), spl
-
-# def fit_glm_group_huber_predict(X_tr, y_tr, X_va, y_va, X_te,
-#                                 n_knots_grid=(5,), degree=3,
-#                                 lam_grid=(1e-3,), delta=1.35):
-#     # 以驗證集挑選 (n_knots, lambda)，精確的 Huber + Group Lasso。
-#     # 回傳 X_te 的單點預測值（float）。
-#     best_loss, best_beta, best_spl = np.inf, None, None
-#     solver = choose_solver()
-
-#     for n_knots in n_knots_grid:
-#         # Spline 展開（訓練用的 spl 也拿來轉換 valid/test）
-#         Xs_tr, groups, spl = spline_design_and_groups(X_tr, degree=degree, n_knots=n_knots)
-#         Xs_va = spl.transform(X_va).astype(np.float32)
-#         Xs_te = spl.transform(X_te).astype(np.float32)
-
-#         n, p = Xs_tr.shape
-#         # 為了公平，對每組標準化（避免某組變數尺度較大吞掉懲罰）
-#         col_std = Xs_tr.std(axis=0, ddof=0)
-#         col_std[col_std == 0] = 1.0
-#         Xs_tr_std = Xs_tr / col_std
-#         Xs_va_std = Xs_va / col_std
-#         Xs_te_std = Xs_te / col_std
-
-#         # 權重 w_g = sqrt(p_g)（避免大組吃虧）
-#         w_g = {}
-#         for g in np.unique(groups):
-#             p_g = (groups == g).sum()
-#             w_g[g] = np.sqrt(p_g)
-
-#         for lam in lam_grid:
-#             beta = cp.Variable(p)
-#             # Huber 損失
-#             loss = cp.sum(cp.huber(y_tr - Xs_tr_std @ beta, delta))
-#             # Group-Lasso 懲罰
-#             pen = 0
-#             for g in np.unique(groups):
-#                 idx = np.where(groups == g)[0]
-#                 pen += w_g[g] * cp.norm2(beta[idx])
-#             obj = cp.Minimize(loss + lam * pen)
-#             prob = cp.Problem(obj)
-#             try:
-#                 prob.solve(solver=solver, verbose=False)
-#             except Exception:
-#                 # 換 solver 再試（以防某些環境某解器不可用）
-#                 for s in ["SCS", "ECOS", "OSQP"]:
-#                     try:
-#                         prob.solve(solver=s, verbose=False)
-#                         break
-#                     except Exception:
-#                         continue
-
-#             if beta.value is None:
-#                 continue
-
-#             # 驗證集損失（用 MSE 或 Huber 皆可；用 MSE 比較直觀）
-#             y_hat_va = (Xs_va_std @ beta.value).ravel()
-#             val_loss = mean_squared_error(y_va, y_hat_va)
-
-#             if val_loss < best_loss:
-#                 best_loss = val_loss
-#                 best_beta = beta.value.copy()
-#                 best_spl  = spl
-#                 best_std  = col_std.copy()
-
-#     # 以最佳參數做測試點預測
-#     Xs_te = best_spl.transform(X_te).astype(np.float32)
-#     Xs_te_std = Xs_te / best_std
-#     y_hat_te = float((Xs_te_std @ best_beta).ravel()[0])
-#     return y_hat_te
-
-# def model_GLM_Huber(X, Y, X_valid, Y_valid, X_test):
-#     return float(fit_glm_group_huber_predict(
-#         X_tr=X, y_tr=Y.ravel(),
-#         X_va=X_valid, y_va=Y_valid.ravel(),
-#         X_te=X_test,
-#         n_knots_grid=(5,), degree=3,
-#         lam_grid=(1e-3,), delta=1.35
-#     ))
-
-
-# # %%  2-7) GBRT+H
-
-# def model_GBRT_Huber(X, Y, X_test, seed=999):
-#     m = GradientBoostingRegressor(
-#         loss='huber', max_depth=2,
-#         learning_rate=0.1, n_estimators=100,
-#         random_state=seed
-#     ).fit(X, Y.ravel())
-#     return float(m.predict(X_test)[0])
-
-
-# # %%  2-8) RF
-
-# def model_RF(X, Y, X_test, seed=999):
-#     m = RandomForestRegressor(
-#         max_depth=3, n_estimators=100,
-#         random_state=seed, n_jobs=-1
-#     ).fit(X, Y.ravel())
-#     return float(m.predict(X_test)[0])
-
-
-# # %%  2-9) NN1 - NN5
-
-# early_stopping = EarlyStopping(
-#     monitor='val_loss',        # 要監控的指標：驗證集損失（val_loss）
-#     patience=5,                # 連續 5 個 epoch 沒「明顯改善」就提前停止（patience 要比總 epoch 小才有意義）
-#     min_delta=1e-4,            # 視為「有改善」的最小幅度，避免極小波動被當成進步
-#     mode='min',                # 該指標越小越好（loss 適用 'min'）
-#     restore_best_weights=True, # 停止時把模型權重回復到 val_loss 最佳的那次
-#     verbose=0                  # 設為 1 可在訓練過程印出 EarlyStopping 的訊息
-# )
-
-# def build_NN_model(n_features, layers):
-#     model = Sequential()
-#     model.add(Input(shape=(n_features,)))
-#     for units in layers:
-#         model.add(Dense(units, activation='relu'))
-#     model.add(Dense(units=1))
-#     adam = tf.keras.optimizers.Adam(learning_rate=0.001)  # learning_rate 更新幅度小，收斂較慢，但較穩定
-#     model.compile(optimizer=adam, 
-#                   loss='mse')
-#     return model
-
-# def model_NN(X_train, Y_train, X_valid, Y_valid, X_test, layers, patience_cb, seed=999):
-#     tf.keras.backend.clear_session()
-#     gc.collect()
-#     n_features = X_train.shape[1]
-#     m = build_NN_model(n_features, layers)
-#     m.fit(X_train, Y_train,
-#           validation_data=(X_valid, Y_valid),
-#           epochs=50, batch_size=64, verbose=0, shuffle=False,
-#           callbacks=[patience_cb])
-#     return float(m.predict(X_test, verbose=0)[0][0])
+from model_nn         import model_NN, layers_dict
 
 
 # %%  Main function
@@ -292,16 +81,7 @@ def predict_information_coefficient(
     os.makedirs(output_dir, exist_ok=True)    
     
     # --- 結果收集（整合在一起，之後再拆檔存） ---
-    all_rows = []    
-
-    # --- 將 'NN' 展開為 NN1~NN5 ---
-    # layers_dict = {
-    #     'NN1': [32],
-    #     'NN2': [32, 16],
-    #     'NN3': [32, 16, 8],
-    #     'NN4': [32, 16, 8, 4],
-    #     'NN5': [32, 16, 8, 4, 2],
-    # }
+    all_rows = []
     expanded = []
     for m in models_to_run:
         if m.upper() == 'NN':
@@ -310,10 +90,8 @@ def predict_information_coefficient(
             expanded.append(m)
     models_to_run = expanded
     
-    # --- 哪些模型需要驗證集 ---
+    # --- 需要驗證集的模型 ---
     MODELS_NEED_VALID = set(['GLM+H', 'NN1','NN2','NN3','NN4','NN5'])
-    
-    # --- 是否需要驗證集（若指定模型裡包含需要驗證的） ---
     need_valid = any(m in MODELS_NEED_VALID for m in models_to_run)
     
     
@@ -326,17 +104,17 @@ def predict_information_coefficient(
         
         ################## 樣本切割 ##################
         
-        # ------- 測試期的可交易標的 -------
+        # ------- 測試集與當期可交易標的 -------
         X_test_row = X_all[n-1, :]
         tradable_mask = ~np.isnan(X_test_row)
         X_test = X_test_row[tradable_mask][None, :]
         
-        # ------- 訓練資料（給所有非 NN / 不驗證 的模型）-------
+        # ------- 訓練集（給所有非 NN / 不驗證 的模型）-------
         X = X_all[0:n-1, :][:, tradable_mask]
         Y = Y_all[1:n, 0]
         X = fillna_by_row_median_inplace(X)
         
-        # ------- 若任何模型需要驗證集，才切 & 準備 NN 用資料 -------
+        # ------- 驗證集 -------
         if need_valid:
             X_train = X_all[0:n-1-valid_length, :][:, tradable_mask]
             Y_train = Y_all[1:n-valid_length, 0]
@@ -389,8 +167,6 @@ def predict_information_coefficient(
                 row['PLS'] = model_PLS(X, Y, X_test, K=3)
 
             elif model_name == 'GLM+H':
-                if not need_valid:
-                    raise RuntimeError("GLM+H 需要驗證集，但目前未切驗證集。")
                 row['GLM+H'] = model_GLM_Huber(X, Y, X_valid, Y_valid, X_test)
 
             elif model_name == 'GBRT+H':
@@ -399,13 +175,10 @@ def predict_information_coefficient(
             elif model_name == 'RF':
                 row['RF'] = model_RF(X, Y, X_test, seed=seed)
 
-            elif model_name in layers_dict:  # NN1..NN5
-                if not need_valid:
-                    raise RuntimeError(f"{model_name} 需要驗證集，但目前未切驗證集。")
+            elif model_name in layers_dict:  # NN1...NN5
                 row[model_name] = model_NN(
                     X_train, Y_train, X_valid, Y_valid, X_test,
                     layers=layers_dict[model_name],
-                    patience_cb=early_stopping,
                     seed=seed
                 )
 
