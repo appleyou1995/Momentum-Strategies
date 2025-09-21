@@ -78,11 +78,12 @@ del horizon, file_path
 
 # All Models:
 # ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'GLM+H', 'GBRT+H', 'RF', 'NN1', 'NN2', 'NN3', 'NN4', 'NN5']
-# models = ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'RF', 'NN1', 'NN2', 'NN3', 'NN4', 'NN5']
-models = ['ENet+H', 'RF']
+models = ['OLS', 'OLS+H', 'ENet+H', 'PCR', 'PLS', 'RF', 'NN1', 'NN2', 'NN3', 'NN4', 'NN5']
+# models = ['OLS', 'OLS+H', 'ENet+H', 'RF']
 
 for model_name in models:
-
+    print(f'{model_name}')
+    
     dict_IC = {}
     for horizon in horizon_name_list:
         fp = os.path.join(Path_Input_05, f'predict_Normal_IC_{horizon}_{model_name}.csv')
@@ -100,7 +101,6 @@ for model_name in models:
     IC_normal = IC_normal.sort_index(ascending=True).dropna()
     
     max_values_normal = get_max_abs_IC_factor(IC_normal)
-    # max_values_normal['tradable'] = tradable['non_nan_count']
     
     # Portfolio performance
     Portfolio_normal = build_strategies(max_values_normal, dict_Top_Bottom, percentage_list, strategy_list)
@@ -118,7 +118,7 @@ for model_name in models:
             percentages=percentage_list
         )
     )
-    
+    print(Portfolio_Analysis_normal)
     out_path = os.path.join(Path_Output, f'Portfolio_Analysis_Normal_IC_{model_name}.csv')
     Portfolio_Analysis_normal.to_csv(out_path, index=True)
     
@@ -129,4 +129,4 @@ for model_name in models:
     
     filename = os.path.join(Path_Output, f'Portfolio_Cumulative_Return_Normal_IC_{model_name}.csv')
     Portfolio_cumulative_return_T.to_csv(filename, index=True)
-
+    print(' ')
