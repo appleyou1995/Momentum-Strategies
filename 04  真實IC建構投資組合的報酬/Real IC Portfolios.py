@@ -47,7 +47,7 @@ from plot                  import (
 )
 
 
-# %%
+# %%  Configuration: Sample Period and Horizon Names
 
 Period_START = '1987-12'
 Period_END   = '2024-11'
