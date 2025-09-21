@@ -149,7 +149,7 @@ def predict_information_coefficient(
         
         # ------- 逐模型呼叫對應函數 -------
         for model_name in models_to_run:
-            # print(f"    {model_name}")                
+            # print(f"    {model_name}")
 
             if model_name == 'OLS':
                 row['OLS'] = model_OLS(X, Y, X_test)
